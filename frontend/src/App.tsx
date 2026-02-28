@@ -33,7 +33,9 @@ function App() {
     if (!user.username && !user.email && !user.password) {
       navigate("/login");
     } else {
-      console.log("User logged in:", user);
+      // User validation logic here (e.g., check token, session, etc.)
+      // If valid, set user state and update links if necessary
+      // If invalid, navigate to login page
     }
   };
 

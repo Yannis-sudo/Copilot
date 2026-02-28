@@ -1,10 +1,15 @@
 import React from "react";
 
+// Import Components
+import UILoginForm from "../components/UILoginForm";
+
+// Import Styles
+import "../styles/login-container.css";
 
 function LoginPage() {
     return (
         <React.Fragment>
-            <h1>Login Page</h1>
+            <UILoginForm />
         </React.Fragment>
     );
 }
