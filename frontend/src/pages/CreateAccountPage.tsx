@@ -21,9 +21,7 @@ export default function CreateAccountPage(props: any) {
 
     return (
         <React.Fragment>
-            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "90vh" }}>
-                <UICreateAccountForm loginType={loginType} setLoginType={setLoginType} handleLogin={handleLogin} />
-            </div>
+            <UICreateAccountForm loginType={loginType} setLoginType={setLoginType} handleLogin={handleLogin} />
         </React.Fragment>
     );
 }
