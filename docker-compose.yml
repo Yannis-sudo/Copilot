@@ -1,12 +1,28 @@
 version: '3.9'
 
 services:
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.dev
+  database:
+    build: ./database
     ports:
-      - "5173:5173"
+      - "5555:5555"
     volumes:
-      - ./frontend:/app
-      - /app/node_modules
+      - ./database:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DATABASE_URL=postgresql://admin:secret@postgres:5432/copilot_db  # "postgres" = service name below
+    depends_on:
+      - postgres
+
+  postgres:
+    build: ./postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: copilot_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
