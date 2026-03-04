@@ -1,23 +1,59 @@
-function YUINavbar(props: any) {
+import { Link } from "react-router-dom";
+
+interface NavLink {
+    label: string;
+    href: string;
+    active: boolean;
+    available: boolean;
+    shown: boolean;
+}
+
+interface YUINavbarProps {
+    links: NavLink[];
+    title?: string;
+}
+
+function YUINavbar(props: YUINavbarProps) {
     return (
-        <nav className="navbar navbar-expand-lg bg-primary">
-            <div className="container-fluid">
-                <a className="navbar-brand text-light fw-bold" href="#">Copilot</a>
-                <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-                    <span className="navbar-toggler-icon"></span>
-                </button>
-                <div className="collapse navbar-collapse" id="navbarNavAltMarkup">
-                    <div className="navbar-nav">
-                        {props.links.map((link: any, index: any) => (
-                            <a
-                                key={index}
-                                className={`nav-link ${link.active ? 'text-light' : 'disabled text-white-50'} text-light`}
-                                href={link.href}
-                            >
-                                {link.label}
-                            </a>
-                        ))}
+        <nav className="bg-gray-900 text-white">
+            <div className="max-w-7xl mx-auto px-4">
+                <div className="relative flex h-16 items-center">
+
+                    {/* Left: Logo */}
+                    <div className="text-xl font-bold">
+                        {props.title || "Yannis' AI App"}
                     </div>
+
+                    {/* Center: Links */}
+                    <div className="absolute left-1/2 transform -translate-x-1/2 hidden md:flex space-x-6 items-center">
+                        {props.links.map((link) => {
+                            if (!link.available) {
+                                return (
+                                    <span
+                                        key={link.href}
+                                        className="text-gray-500 select-none"
+                                        title="Not available"
+                                    >
+                                        {link.label}
+                                    </span>
+                                );
+                            }
+
+                            return (
+                                <Link
+                                    key={link.href}
+                                    to={link.href}
+                                    className={`transition-colors ${link.active
+                                            ? "text-white font-semibold border-b-2 border-blue-500"
+                                            : "text-gray-300 hover:text-white"
+                                        }`}
+                                >
+                                    {link.label}
+                                </Link>
+                            );
+                        })}
+                    </div>
+
                 </div>
             </div>
         </nav>

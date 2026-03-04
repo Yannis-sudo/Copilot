@@ -1,5 +1,3 @@
-import "../../style/input/ui-text-input.css";
-
 export default function UITextInput(props: any) {
     return (
         <input 

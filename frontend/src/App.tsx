@@ -23,12 +23,14 @@ function App() {
   });
 
   const [links, setLinks] = useState([
-    { label: 'Home', href: '/', active: false, available: false, shown: true },
+    { label: 'Dashboard', href: '/', active: false, available: false, shown: true },
     { label: 'AI-Chat', href: '/ai-chat', active: false, available: false, shown: true },
     { label: 'Notes', href: '/notes', active: false, available: false, shown: true },
     { label: 'Login', href: '/login', active: false, available: true, shown: false },
     { label: 'Create Account', href: '/create-account', active: false, available: true, shown: false },
   ]);
+
+  const [activePage, setActivePage] = useState("/");
 
   const [loginType, setLoginType] = useState({
     email: "",
@@ -47,6 +49,11 @@ function App() {
     );
   }, [location.pathname]);
 
+  useEffect(() => {
+    const currentLink = links.find(link => link.href === location.pathname);
+    setActivePage(currentLink?.label || "Copilot");
+  }, [links]);
+
   const checkLogin = () => {
     const currentLink = links.find(link => link.href === location.pathname);
     const isAvailable = currentLink?.available === true;
@@ -62,7 +69,7 @@ function App() {
 
   return (
     <>
-      <YUINavbar links={links.filter(link => link.shown)} />
+      <YUINavbar links={links.filter(link => link.shown)} title={activePage} />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage setUser={setUser} />} />

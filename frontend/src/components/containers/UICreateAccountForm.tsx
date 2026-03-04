@@ -2,8 +2,6 @@ import React from "react";
 import UiButton from "../buttons/UIButton";
 import UITextInput from "../input/UITextInput";
 import UIHeadline from "../text/UIHeadline";
-
-import "../../style/containers/ui-login-form.css";
 import UILink from "../buttons/UILink";
 
 function UICreateAccountForm(props: any) {
