@@ -24,3 +24,13 @@ dist-ssr
 *.sw?
 
 frontend-service.txt
+
+#python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+env/
+venv/
+ENV/
+env.bak/
