@@ -1,14 +1,15 @@
-# tables as python classes
+"""Database models."""
+
 from sqlalchemy import Column, Integer, String
 from app.database import Base
 
+
 class User(Base):
+    """User database model."""
+
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    username = Column(String, nullable=False)
-    email = Column(String, unique=True, index=True, nullable=False)
-    password = Column(String, nullable=False)
-
-def create_user_table(engine):
-    Base.metadata.create_all(bind=engine)
+    username = Column(String(255), nullable=False)
+    email = Column(String(255), unique=True, index=True, nullable=False)
+    password = Column(String(255), nullable=False)

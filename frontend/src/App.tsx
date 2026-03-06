@@ -1,75 +1,108 @@
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
-// Pages
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import AIChatPage from "./pages/AIChatPage";
 import NotesPage from "./pages/NotesPage";
 import CreateAccountPage from "./pages/CreateAccountPage";
-// Styles
-import "./App.css"
-import "./index.css"
-// Components
-import YUINavbar from "./components/layout/UINavbar";
+import UINavbar from "./components/layout/UINavbar";
+import "./App.css";
+import "./index.css";
 
-function App() {
+interface NavLink {
+  label: string;
+  href: string;
+  active: boolean;
+  available: boolean;
+  shown: boolean;
+}
+
+interface User {
+  username: string;
+  email: string;
+  password: string;
+}
+
+const INITIAL_LINKS: NavLink[] = [
+  {
+    label: "Dashboard",
+    href: "/",
+    active: false,
+    available: false,
+    shown: true,
+  },
+  {
+    label: "AI-Chat",
+    href: "/ai-chat",
+    active: false,
+    available: false,
+    shown: true,
+  },
+  {
+    label: "Notes",
+    href: "/notes",
+    active: false,
+    available: false,
+    shown: true,
+  },
+  {
+    label: "Login",
+    href: "/login",
+    active: false,
+    available: true,
+    shown: false,
+  },
+  {
+    label: "Create Account",
+    href: "/create-account",
+    active: false,
+    available: true,
+    shown: false,
+  },
+];
+
+function App(): React.ReactElement {
   const navigate = useNavigate();
-  const location = useLocation(); // get current path
+  const location = useLocation();
 
-  const [user, setUser] = useState({
+  const [user, setUser] = useState<User>({
     username: "",
     email: "",
-    password: ""
-  });
-
-  const [links, setLinks] = useState([
-    { label: 'Dashboard', href: '/', active: false, available: false, shown: true },
-    { label: 'AI-Chat', href: '/ai-chat', active: false, available: false, shown: true },
-    { label: 'Notes', href: '/notes', active: false, available: false, shown: true },
-    { label: 'Login', href: '/login', active: false, available: true, shown: false },
-    { label: 'Create Account', href: '/create-account', active: false, available: true, shown: false },
-  ]);
-
-  const [activePage, setActivePage] = useState("/");
-
-  const [loginType, setLoginType] = useState({
-    email: "",
     password: "",
-    passwordConfirm: "",
-    username: ""
   });
+
+  const [links, setLinks] = useState<NavLink[]>(INITIAL_LINKS);
+  const [activePage, setActivePage] = useState<string>("/");
 
   // Update active link whenever route changes
   useEffect(() => {
-    setLinks(prev =>
-      prev.map(link => ({
+    setLinks((prev) =>
+      prev.map((link) => ({
         ...link,
-        active: link.href === location.pathname
+        active: link.href === location.pathname,
       }))
     );
   }, [location.pathname]);
 
+  // Update active page title
   useEffect(() => {
-    const currentLink = links.find(link => link.href === location.pathname);
+    const currentLink = links.find((link) => link.href === location.pathname);
     setActivePage(currentLink?.label || "Copilot");
   }, [links]);
 
-  const checkLogin = () => {
-    const currentLink = links.find(link => link.href === location.pathname);
-    const isAvailable = currentLink?.available === true;
+  // Check if user is logged in and redirect if accessing protected routes
+  useEffect(() => {
+    const currentLink = links.find((link) => link.href === location.pathname);
+    const isPublicRoute = currentLink?.available === true;
 
-    if (!user.username && !user.email && !user.password && !isAvailable) {
+    if (!user.email && !isPublicRoute) {
       navigate("/login");
     }
-  };
-
-  useEffect(() => {
-    checkLogin();
-  }, [user, location.pathname]);
+  }, [user, location.pathname, links, navigate]);
 
   return (
     <>
-      <YUINavbar links={links.filter(link => link.shown)} title={activePage} />
+      <UINavbar links={links.filter((link) => link.shown)} title={activePage} />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage setUser={setUser} />} />
