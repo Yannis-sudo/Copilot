@@ -5,7 +5,7 @@ import { AUTH_MESSAGES } from "../constants";
 import type { LoginPayload } from "../types";
 
 interface LoginPageProps {
-  setUser: (user: { email: string }) => void;
+  setUser: (user: { email: string, password: string }) => void;
 }
 
 function LoginPage({ setUser }: LoginPageProps): React.ReactElement {
@@ -24,7 +24,7 @@ function LoginPage({ setUser }: LoginPageProps): React.ReactElement {
       const response = await login(credentials);
 
       if (response.message === AUTH_MESSAGES.SUCCESS) {
-        setUser({ email: credentials.email });
+        setUser({ email: credentials.email, password: credentials.password });
         navigate("/");
       } else {
         setError(response.message || "Login was not successful");

@@ -1,5 +1,5 @@
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import AIChatPage from "./pages/AIChatPage";
@@ -99,6 +99,28 @@ function App(): React.ReactElement {
       navigate("/login");
     }
   }, [user, location.pathname, links, navigate]);
+
+  useEffect(() => {
+    if (user.email && user.password) {
+      setLinks((prev) =>
+        prev.map((link) => {
+          if (link.href === "/login" || link.href === "/create-account") {
+            return { ...link, shown: false };
+          }
+          return { ...link, available: true };
+        })
+      );
+    } else {
+      setLinks((prev) =>
+        prev.map((link) => {
+          if (link.href === "/login" || link.href === "/create-account") {
+            return { ...link, shown: false, available: true };
+          }
+          return { ...link, available: false };
+        })
+      );
+    }
+  }, [user]);
 
   return (
     <>
