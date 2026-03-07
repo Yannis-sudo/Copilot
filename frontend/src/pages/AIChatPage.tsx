@@ -132,7 +132,7 @@ function AIChatPage(): React.ReactElement {
 
         {/* Input bar - white with a light top border as separator */}
         <div className="bg-white border-t border-gray-200 px-4 md:px-20 lg:px-40 py-4 shrink-0">
-          <div className="flex items-center gap-3 bg-white border border-gray-300 rounded-2xl px-4 py-2 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent transition-all">
+          <div className="flex items-center gap-3 bg-white border-2 border-blue-200 rounded-2xl px-4 py-2 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all">
             <textarea
               rows={1}
               value={input}

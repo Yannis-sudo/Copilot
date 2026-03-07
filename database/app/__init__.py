@@ -1,1 +1,0 @@
-"""Database application package."""
