@@ -8,6 +8,7 @@ import CreateAccountPage from "./pages/CreateAccountPage";
 import UINavbar from "./components/layout/UINavbar";
 import "./App.css";
 import "./index.css";
+import EmailPage from "./pages/EmailPage";
 
 interface NavLink {
   label: string;
@@ -41,6 +42,13 @@ const INITIAL_LINKS: NavLink[] = [
   {
     label: "Notes",
     href: "/notes",
+    active: false,
+    available: false,
+    shown: true,
+  },
+  {
+    label: "Email",
+    href: "/email",
     active: false,
     available: false,
     shown: true,
@@ -131,6 +139,7 @@ function App(): React.ReactElement {
         <Route path="/create-account" element={<CreateAccountPage />} />
         <Route path="/ai-chat" element={<AIChatPage />} />
         <Route path="/notes" element={<NotesPage />} />
+        <Route path="/email" element={<EmailPage />} />
       </Routes>
     </>
   );
