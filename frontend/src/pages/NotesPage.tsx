@@ -1,9 +1,15 @@
 import React from "react";
 
-function NotesPage() {
+interface NotesPageProps {
+  darkMode?: boolean;
+}
+
+function NotesPage({ darkMode = false }: NotesPageProps) {
     return (
         <React.Fragment>
-            <h1>Notes Page</h1>
+            <div className={`flex-1 flex items-center justify-center ${darkMode ? "bg-dark" : "bg-gray-100"}`}>
+                <h1 className={`text-4xl font-bold ${darkMode ? "text-gray-100" : "text-gray-800"}`}>Notes</h1>
+            </div>
         </React.Fragment>
     );
 }

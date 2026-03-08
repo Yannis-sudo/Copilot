@@ -13,7 +13,11 @@ interface CreateAccountFormState extends CreateAccountPayload {
   passwordConfirm: string;
 }
 
-function CreateAccountPage(): React.ReactElement {
+interface CreateAccountPageProps {
+  darkMode?: boolean;
+}
+
+function CreateAccountPage({ darkMode = false }: CreateAccountPageProps): React.ReactElement {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<CreateAccountFormState>({
     email: "",
@@ -63,14 +67,14 @@ function CreateAccountPage(): React.ReactElement {
 
   return (
     <React.Fragment>
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 overflow-hidden">
-        <UICard className="w-full max-w-md">
-          <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
+      <div className={`min-h-screen flex items-center justify-center overflow-hidden ${darkMode ? "bg-dark" : "bg-gray-100"}`}>
+        <UICard darkMode={darkMode} className="w-full max-w-md">
+          <h2 className="text-2xl font-bold text-center mb-6">
             Create Account
           </h2>
 
           <form className="space-y-5">
-            <UIErrorMessage message={error || ""} />
+            <UIErrorMessage message={error || ""} darkMode={darkMode} />
             <UITextInput
               type="text"
               name="username"
@@ -79,6 +83,7 @@ function CreateAccountPage(): React.ReactElement {
               value={formData.username}
               onChange={handleInputChange}
               required
+              darkMode={darkMode}
             />
 
             <UITextInput
@@ -89,6 +94,7 @@ function CreateAccountPage(): React.ReactElement {
               value={formData.email}
               onChange={handleInputChange}
               required
+              darkMode={darkMode}
             />
 
             <UITextInput
@@ -99,6 +105,7 @@ function CreateAccountPage(): React.ReactElement {
               value={formData.password}
               onChange={handleInputChange}
               required
+              darkMode={darkMode}
             />
 
             <UITextInput
@@ -109,6 +116,7 @@ function CreateAccountPage(): React.ReactElement {
               value={formData.passwordConfirm}
               onChange={handleInputChange}
               required
+              darkMode={darkMode}
             />
 
             <div className="space-y-4 pt-2">
@@ -116,13 +124,14 @@ function CreateAccountPage(): React.ReactElement {
                 type="button"
                 onClick={handleCreateAccount}
                 className="w-full"
+                darkMode={darkMode}
               >
                 Create Account
               </UIButton>
 
-              <p className="text-center text-sm text-gray-600">
+              <p className={`text-center text-sm ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
                 Already have an account?{" "}
-                <UILink href="/login">Login here</UILink>
+                <UILink href="/login" darkMode={darkMode}>Login here</UILink>
               </p>
             </div>
           </form>

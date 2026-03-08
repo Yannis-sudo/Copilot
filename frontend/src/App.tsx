@@ -1,5 +1,5 @@
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
-import { useState, useEffect, use } from "react";
+import { useState, useEffect } from "react";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import AIChatPage from "./pages/AIChatPage";
@@ -23,6 +23,22 @@ interface User {
   email: string;
   password: string;
 }
+
+interface Settings {
+  // User settings
+  user: User;
+  // App settings
+  darkMode: boolean;
+}
+
+const INITIAL_SETTINGS: Settings = {
+  user: {
+    username: "",
+    email: "",
+    password: "",
+  },
+  darkMode: true,
+};
 
 const INITIAL_LINKS: NavLink[] = [
   {
@@ -73,14 +89,26 @@ function App(): React.ReactElement {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [user, setUser] = useState<User>({
-    username: "",
-    email: "",
-    password: "",
-  });
+  const [settings, setSettings] = useState<Settings>(INITIAL_SETTINGS);
 
   const [links, setLinks] = useState<NavLink[]>(INITIAL_LINKS);
   const [activePage, setActivePage] = useState<string>("/");
+
+  // Helper to update user settings
+  const setUser = (user: User) => {
+    setSettings((prev) => ({
+      ...prev,
+      user,
+    }));
+  };
+
+  // Helper to toggle dark mode
+  const toggleDarkMode = () => {
+    setSettings((prev) => ({
+      ...prev,
+      darkMode: !prev.darkMode,
+    }));
+  };
 
   // Update active link whenever route changes
   useEffect(() => {
@@ -103,13 +131,13 @@ function App(): React.ReactElement {
     const currentLink = links.find((link) => link.href === location.pathname);
     const isPublicRoute = currentLink?.available === true;
 
-    if (!user.email && !isPublicRoute) {
+    if (!settings.user.email && !isPublicRoute) {
       navigate("/login");
     }
-  }, [user, location.pathname, links, navigate]);
+  }, [settings.user, location.pathname, links, navigate]);
 
   useEffect(() => {
-    if (user.email && user.password) {
+    if (settings.user.email && settings.user.password) {
       setLinks((prev) =>
         prev.map((link) => {
           if (link.href === "/login" || link.href === "/create-account") {
@@ -128,20 +156,25 @@ function App(): React.ReactElement {
         })
       );
     }
-  }, [user]);
+  }, [settings.user]);
 
   return (
-    <>
-      <UINavbar links={links.filter((link) => link.shown)} title={activePage} />
+    <div className={settings.darkMode ? "dark" : ""}>
+      <UINavbar
+        links={links.filter((link) => link.shown)}
+        title={activePage}
+        darkMode={settings.darkMode}
+        onToggleDarkMode={toggleDarkMode}
+      />
       <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<LoginPage setUser={setUser} />} />
-        <Route path="/create-account" element={<CreateAccountPage />} />
-        <Route path="/ai-chat" element={<AIChatPage />} />
-        <Route path="/notes" element={<NotesPage />} />
-        <Route path="/email" element={<EmailPage />} />
+        <Route path="/" element={<HomePage darkMode={settings.darkMode} />} />
+        <Route path="/login" element={<LoginPage setUser={setUser} darkMode={settings.darkMode} />} />
+        <Route path="/create-account" element={<CreateAccountPage darkMode={settings.darkMode} />} />
+        <Route path="/ai-chat" element={<AIChatPage darkMode={settings.darkMode} />} />
+        <Route path="/notes" element={<NotesPage darkMode={settings.darkMode} />} />
+        <Route path="/email" element={<EmailPage darkMode={settings.darkMode} />} />
       </Routes>
-    </>
+    </div>
   );
 }
 

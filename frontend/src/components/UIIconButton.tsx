@@ -6,6 +6,7 @@ interface UIIconButtonProps {
   title: string;
   className?: string;
   variant?: "default" | "danger" | "success" | "dark";
+  darkMode?: boolean;
 }
 
 export default function UIIconButton({
@@ -14,12 +15,19 @@ export default function UIIconButton({
   title,
   className = "",
   variant = "default",
+  darkMode = false,
 }: UIIconButtonProps): React.ReactElement {
   const variantStyles = {
-    default: "text-gray-400 hover:text-gray-700 hover:bg-gray-100",
-    danger: "text-gray-400 hover:text-red-500 hover:bg-gray-100",
-    success: "text-gray-400 hover:text-yellow-500 hover:bg-gray-100",
-    dark: "bg-gray-900 text-white hover:bg-gray-700",
+    default: darkMode
+      ? "text-gray-400 hover:text-primary-400 hover:bg-gray-800"
+      : "text-gray-400 hover:text-gray-700 hover:bg-gray-100",
+    danger: darkMode
+      ? "text-gray-400 hover:text-red-400 hover:bg-gray-800"
+      : "text-gray-400 hover:text-red-500 hover:bg-gray-100",
+    success: darkMode
+      ? "text-gray-400 hover:text-yellow-400 hover:bg-gray-800"
+      : "text-gray-400 hover:text-yellow-500 hover:bg-gray-100",
+    dark: "bg-primary-600 text-white hover:bg-primary-700",
   };
 
   return (

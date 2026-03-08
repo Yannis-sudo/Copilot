@@ -3,12 +3,14 @@ import React from "react";
 interface UICheckboxProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
+  darkMode?: boolean;
 }
 
 export default function UICheckbox({
   label,
   id,
   className = "",
+  darkMode = false,
   ...props
 }: UICheckboxProps): React.ReactElement {
   const uniqueId = id || `checkbox-${Math.random()}`;
@@ -18,10 +20,10 @@ export default function UICheckbox({
       <input
         id={uniqueId}
         type="checkbox"
-        className={`rounded border-gray-300 text-blue-600 focus:ring-blue-500 accent-blue-600 ${className}`}
+        className={`rounded border-gray-300 text-primary-600 focus:ring-primary-500 accent-primary-600 ${className}`}
         {...props}
       />
-      {label && <span className="text-gray-600 text-sm">{label}</span>}
+      {label && <span className={`text-sm ${darkMode ? "text-gray-300" : "text-gray-600"}`}>{label}</span>}
     </label>
   );
 }

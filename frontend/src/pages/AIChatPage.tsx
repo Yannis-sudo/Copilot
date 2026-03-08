@@ -19,7 +19,11 @@ const INITIAL_MESSAGES: Message[] = [
   },
 ];
 
-function AIChatPage(): React.ReactElement {
+interface AIChatPageProps {
+  darkMode?: boolean;
+}
+
+function AIChatPage({ darkMode = false }: AIChatPageProps): React.ReactElement {
   const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -82,15 +86,15 @@ function AIChatPage(): React.ReactElement {
 
   return (
     <React.Fragment>
-      <div className="flex flex-col bg-white" style={{ height: "calc(100vh - 64px)" }}>
+      <div className={`flex flex-col ${darkMode ? "bg-dark" : "bg-white"}`} style={{ height: "calc(100vh - 64px)" }}>
 
         {/* Scrollable message area */}
-        <div className="flex-1 overflow-y-auto px-4 md:px-20 lg:px-40 py-6">
+        <div className={`flex-1 overflow-y-auto px-4 md:px-20 lg:px-40 py-6 ${darkMode ? "bg-dark" : "bg-white"}`}>
           {messages.map((msg) => (
-            <UIChatBubble key={msg.id} message={msg.text} role={msg.role} />
+            <UIChatBubble key={msg.id} message={msg.text} role={msg.role} darkMode={darkMode} />
           ))}
 
-          {isTyping && <UITypingIndicator />}
+          {isTyping && <UITypingIndicator darkMode={darkMode} />}
 
           <div ref={bottomRef} />
         </div>
@@ -102,6 +106,7 @@ function AIChatPage(): React.ReactElement {
           onKeyDown={handleKeyDown}
           onSend={handleSend}
           disabled={isTyping}
+          darkMode={darkMode}
         />
       </div>
     </React.Fragment>

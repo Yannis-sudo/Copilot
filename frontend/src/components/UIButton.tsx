@@ -7,6 +7,7 @@ interface UIButtonProps {
     disabled?: boolean;
     variant?: "primary" | "secondary" | "danger";
     className?: string;
+    darkMode?: boolean;
 }
 
 export default function UIButton({
@@ -16,15 +17,21 @@ export default function UIButton({
     disabled = false,
     variant = "primary",
     className = "",
+    darkMode = false,
 }: UIButtonProps): React.ReactElement {
     const baseStyles =
         "px-4 py-2 rounded-lg font-semibold transition-colors text-sm flex items-center justify-center gap-2";
 
     const variantStyles = {
-        primary: "bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 text-center",
-        secondary:
-            "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 disabled:opacity-50 text-center",
-        danger: "bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 text-center",
+        primary: darkMode
+            ? "bg-primary-600 text-white hover:bg-primary-700 disabled:opacity-50 text-center"
+            : "bg-primary-600 text-white hover:bg-primary-700 disabled:opacity-50 text-center",
+        secondary: darkMode
+            ? "bg-gray-700 text-gray-100 border border-gray-600 hover:bg-gray-600 disabled:opacity-50 text-center"
+            : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 disabled:opacity-50 text-center",
+        danger: darkMode
+            ? "bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 text-center"
+            : "bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 text-center",
     };
 
     return (

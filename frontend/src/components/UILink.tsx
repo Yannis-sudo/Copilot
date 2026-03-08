@@ -6,6 +6,7 @@ interface UILinkProps {
   children: React.ReactNode;
   external?: boolean;
   className?: string;
+  darkMode?: boolean;
   [key: string]: any;
 }
 
@@ -14,10 +15,11 @@ export default function UILink({
   children,
   external = false,
   className = "",
+  darkMode = false,
   ...props
 }: UILinkProps): React.ReactElement {
   const baseStyles =
-    "text-blue-600 font-medium hover:underline transition-colors";
+    `font-medium hover:underline transition-colors ${darkMode ? "text-primary-400" : "text-primary-600"}`;
 
   if (external) {
     return (

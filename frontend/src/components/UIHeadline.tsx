@@ -4,14 +4,16 @@ interface UIHeadlineProps {
   level?: 1 | 2 | 3 | 4 | 5 | 6;
   children: React.ReactNode;
   className?: string;
+  darkMode?: boolean;
 }
 
 export default function UIHeadline({
   level = 2,
   children,
   className = "",
+  darkMode = false,
 }: UIHeadlineProps): React.ReactElement {
-  const baseStyles = "font-bold text-gray-800";
+  const baseStyles = `font-bold ${darkMode ? "text-gray-100" : "text-gray-800"}`;
 
   const sizeStyles = {
     1: "text-4xl",

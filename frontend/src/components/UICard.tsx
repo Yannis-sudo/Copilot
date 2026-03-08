@@ -4,12 +4,14 @@ interface UICardProps {
   children: React.ReactNode;
   className?: string;
   padding?: "small" | "medium" | "large";
+  darkMode?: boolean;
 }
 
 export default function UICard({
   children,
   className = "",
   padding = "medium",
+  darkMode = false,
 }: UICardProps): React.ReactElement {
   const paddingStyles = {
     small: "p-4",
@@ -19,7 +21,11 @@ export default function UICard({
 
   return (
     <div
-      className={`bg-white rounded-2xl shadow-lg outline outline-2 outline-blue-200 ${paddingStyles[padding]} ${className}`}
+      className={`${
+        darkMode
+          ? "bg-gray-800 outline-primary-900"
+          : "bg-white outline-primary-200"
+      } rounded-2xl shadow-lg outline outline-2 ${paddingStyles[padding]} ${className}`}
     >
       {children}
     </div>

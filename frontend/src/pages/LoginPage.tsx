@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { login } from "../api";
 import { AUTH_MESSAGES } from "../constants";
-import type { LoginPayload } from "../types";
+import type { LoginPayload, User } from "../types";
 import UICard from "../components/UICard";
 import UITextInput from "../components/UITextInput";
 import UICheckbox from "../components/UICheckbox";
@@ -11,10 +11,11 @@ import UIErrorMessage from "../components/UIErrorMessage";
 import UILink from "../components/UILink";
 
 interface LoginPageProps {
-  setUser: (user: { email: string, password: string }) => void;
+  setUser: (user: User) => void;
+  darkMode?: boolean;
 }
 
-function LoginPage({ setUser }: LoginPageProps): React.ReactElement {
+function LoginPage({ setUser, darkMode = false }: LoginPageProps): React.ReactElement {
   const navigate = useNavigate();
   const [credentials, setCredentials] = useState<LoginPayload>({
     email: "",
@@ -30,7 +31,7 @@ function LoginPage({ setUser }: LoginPageProps): React.ReactElement {
       const response = await login(credentials);
 
       if (response.message === AUTH_MESSAGES.SUCCESS) {
-        setUser({ email: credentials.email, password: credentials.password });
+        setUser({ username: "", email: credentials.email, password: credentials.password });
         navigate("/");
       } else {
         setError(response.message || "Login was not successful");
@@ -54,14 +55,14 @@ function LoginPage({ setUser }: LoginPageProps): React.ReactElement {
 
   return (
     <React.Fragment>
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 overflow-hidden">
-        <UICard className="w-full max-w-md">
-          <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
+      <div className={`min-h-screen flex items-center justify-center overflow-hidden ${darkMode ? "bg-dark" : "bg-gray-100"}`}>
+        <UICard darkMode={darkMode} className="w-full max-w-md">
+          <h2 className="text-2xl font-bold text-center mb-6">
             Login
           </h2>
 
           <form className="space-y-5" onSubmit={handleLogin}>
-            <UIErrorMessage message={error || ""} />
+            <UIErrorMessage message={error || ""} darkMode={darkMode} />
             <UITextInput
               type="email"
               name="email"
@@ -70,6 +71,7 @@ function LoginPage({ setUser }: LoginPageProps): React.ReactElement {
               value={credentials.email}
               onChange={handleInputChange}
               required
+              darkMode={darkMode}
             />
 
             <UITextInput
@@ -80,26 +82,27 @@ function LoginPage({ setUser }: LoginPageProps): React.ReactElement {
               value={credentials.password}
               onChange={handleInputChange}
               required
+              darkMode={darkMode}
             />
 
             <div className="flex items-center justify-between text-sm">
-              <UICheckbox label="Remember me" />
+              <UICheckbox label="Remember me" darkMode={darkMode} />
 
               <UILink
                 href="#"
                 external
-                className="text-blue-600 hover:underline"
+                darkMode={darkMode}
               >
                 Forgot password?
               </UILink>
             </div>
 
-            <UIButton type="submit" className="w-full">
+            <UIButton type="submit" className="w-full" darkMode={darkMode}>
               Sign In
             </UIButton>
-            <p className="text-center text-sm text-gray-600">
+            <p className={`text-center text-sm ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
               Don't have an account?{" "}
-              <UILink href="/create-account">Sign Up</UILink>
+              <UILink href="/create-account" darkMode={darkMode}>Sign Up</UILink>
             </p>
           </form>
         </UICard>

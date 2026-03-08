@@ -7,6 +7,7 @@ interface UIChatTextAreaProps {
   onSend: () => void;
   disabled?: boolean;
   placeholder?: string;
+  darkMode?: boolean;
 }
 
 export default function UIChatTextArea({
@@ -16,10 +17,11 @@ export default function UIChatTextArea({
   onSend,
   disabled = false,
   placeholder = "Type a message...",
+  darkMode = false,
 }: UIChatTextAreaProps): React.ReactElement {
   return (
-    <div className="bg-white border-t border-gray-200 px-4 md:px-20 lg:px-40 py-4 shrink-0">
-      <div className="flex items-center gap-3 bg-white border-2 border-blue-200 rounded-2xl px-4 py-2 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all">
+    <div className={`${darkMode ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"} border-t px-4 md:px-20 lg:px-40 py-4 shrink-0`}>
+      <div className={`flex items-center gap-3 ${darkMode ? "bg-dark border-primary-700" : "bg-white border-primary-200"} border-2 rounded-2xl px-4 py-2 focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-primary-500 transition-all`}>
         <textarea
           rows={1}
           value={value}
@@ -27,7 +29,7 @@ export default function UIChatTextArea({
           onKeyDown={onKeyDown}
           placeholder={placeholder}
           disabled={disabled}
-          className="flex-1 bg-transparent resize-none text-sm text-gray-800 placeholder-gray-400 focus:outline-none leading-relaxed self-center disabled:opacity-50"
+          className={`flex-1 bg-transparent resize-none text-sm placeholder-gray-400 focus:outline-none leading-relaxed self-center disabled:opacity-50 ${darkMode ? "text-gray-100" : "text-gray-800"}`}
           style={{ maxHeight: "160px" }}
         />
 
@@ -35,7 +37,7 @@ export default function UIChatTextArea({
         <button
           onClick={onSend}
           disabled={!value.trim() || disabled}
-          className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0"
+          className="w-9 h-9 rounded-xl bg-primary-600 text-white flex items-center justify-center hover:bg-primary-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0"
           aria-label="Send message"
         >
           <svg
@@ -49,13 +51,13 @@ export default function UIChatTextArea({
         </button>
       </div>
 
-      <p className="text-center text-xs text-gray-400 mt-2">
+      <p className={`text-center text-xs mt-2 ${darkMode ? "text-gray-400" : "text-gray-400"}`}>
         Press{" "}
-        <kbd className="px-1 py-0.5 bg-gray-100 border border-gray-200 rounded text-gray-500">
+        <kbd className={`px-1 py-0.5 rounded text-gray-500 ${darkMode ? "bg-gray-600 border-gray-500" : "bg-gray-100 border-gray-200"} border`}>
           Enter
         </kbd>{" "}
         to send,{" "}
-        <kbd className="px-1 py-0.5 bg-gray-100 border border-gray-200 rounded text-gray-500">
+        <kbd className={`px-1 py-0.5 rounded text-gray-500 ${darkMode ? "bg-gray-600 border-gray-500" : "bg-gray-100 border-gray-200"} border`}>
           Shift+Enter
         </kbd>{" "}
         for a new line
