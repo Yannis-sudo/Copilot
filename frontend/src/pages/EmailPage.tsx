@@ -276,7 +276,7 @@ function EmailPage() {
                 </aside>
 
                 {/* Main content area */}
-                <main className="flex-1 flex overflow-hidden">
+                <main className="flex-1 flex overflow-hidden border-l border-gray-200">
 
                     {/* Email list panel — only shown when settings.showFolderPreview is true */}
                     {settings.showFolderPreview && (
