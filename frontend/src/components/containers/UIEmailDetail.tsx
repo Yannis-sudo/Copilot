@@ -24,35 +24,35 @@ export default function UIEmailDetail(props: UIEmailDetailProps) {
     const handleStar = () => {};
 
     return (
-        <div className={`flex flex-col h-full ${props.darkMode ? "bg-gray-900" : "bg-white"}`}>
+        <div className="flex flex-col h-full bg-[#1a1a1a]">
 
             {/* Header */}
-            <div className={`px-6 py-4 border-b ${props.darkMode ? "border-gray-700 bg-gray-900" : "border-gray-200 bg-white"} shrink-0`}>
-                <h2 className={`text-xl font-bold mb-2 ${props.darkMode ? "text-gray-100" : "text-gray-800"}`}>{props.subject}</h2>
+            <div className="px-6 py-4 border-b border-[rgba(124,58,237,0)] shrink-0">
+                <h2 className="text-xl font-bold mb-2 text-gray-100">{props.subject}</h2>
                 <div className="flex justify-between items-center">
-                    <p className={`text-sm ${props.darkMode ? "text-gray-400" : "text-gray-500"}`}>
-                        From: <span className={`font-medium ${props.darkMode ? "text-gray-300" : "text-gray-700"}`}>{props.from}</span>
+                    <p className="text-sm text-gray-500">
+                        From: <span className="font-medium text-gray-300">{props.from}</span>
                     </p>
                     <div className="flex items-center gap-3">
                         {!props.read && (
-                            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${props.darkMode ? "bg-primary-900 text-primary-400" : "bg-primary-100 text-primary-700"}`}>
+                            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[rgba(124,58,237,0.20)] text-[#a78bfa]">
                                 Unread
                             </span>
                         )}
-                        <p className={`text-xs ${props.darkMode ? "text-gray-600" : "text-gray-400"}`}>{props.date}</p>
+                        <p className="text-xs text-gray-600">{props.date}</p>
                     </div>
                 </div>
             </div>
 
             {/* Body — scrollable email content */}
-            <div className={`flex-1 overflow-y-auto px-6 py-5 ${props.darkMode ? "bg-dark" : "bg-white"}`}>
-                <p className={`text-sm whitespace-pre-line leading-relaxed ${props.darkMode ? "text-gray-300" : "text-gray-700"}`}>
+            <div className="flex-1 overflow-y-auto px-6 py-5 bg-[#1a1a1a]">
+                <p className="text-sm whitespace-pre-line leading-relaxed text-gray-300">
                     {props.body}
                 </p>
             </div>
 
             {/* Footer — primary actions left, secondary actions right */}
-            <div className={`px-6 py-4 border-t ${props.darkMode ? "border-gray-700 bg-gray-900" : "border-gray-200 bg-white"} shrink-0 flex items-center justify-between`}>
+            <div className="px-6 py-4 border-t border-[rgba(124,58,237,0)] bg-[#1a1a1a] shrink-0 flex items-center justify-between">
 
                 {/* Primary actions */}
                 <div className="flex items-center gap-2">
