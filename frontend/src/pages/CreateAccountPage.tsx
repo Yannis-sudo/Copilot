@@ -1,8 +1,13 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { createAccount } from "../api";
 import { AUTH_MESSAGES } from "../constants";
 import type { CreateAccountPayload } from "../types";
+import UICard from "../components/UICard";
+import UITextInput from "../components/UITextInput";
+import UIButton from "../components/UIButton";
+import UIErrorMessage from "../components/UIErrorMessage";
+import UILink from "../components/UILink";
 
 interface CreateAccountFormState extends CreateAccountPayload {
   passwordConfirm: string;
@@ -59,92 +64,69 @@ function CreateAccountPage(): React.ReactElement {
   return (
     <React.Fragment>
       <div className="min-h-screen flex items-center justify-center bg-gray-100 overflow-hidden">
-        <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md outline outline-2 outline-blue-200">
+        <UICard className="w-full max-w-md">
           <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
             Create Account
           </h2>
 
           <form className="space-y-5">
-            {error && (
-              <div className="text-red-600 text-sm font-medium">{error}</div>
-            )}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Username
-              </label>
-              <input
-                type="text"
-                name="username"
-                placeholder="Username"
-                value={formData.username}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
+            <UIErrorMessage message={error || ""} />
+            <UITextInput
+              type="text"
+              name="username"
+              label="Username"
+              placeholder="Username"
+              value={formData.username}
+              onChange={handleInputChange}
+              required
+            />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email
-              </label>
-              <input
-                type="email"
-                name="email"
-                placeholder="you@example.com"
-                value={formData.email}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
+            <UITextInput
+              type="email"
+              name="email"
+              label="Email"
+              placeholder="you@example.com"
+              value={formData.email}
+              onChange={handleInputChange}
+              required
+            />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Password
-              </label>
-              <input
-                type="password"
-                name="password"
-                placeholder="••••••••"
-                value={formData.password}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
+            <UITextInput
+              type="password"
+              name="password"
+              label="Password"
+              placeholder="••••••••"
+              value={formData.password}
+              onChange={handleInputChange}
+              required
+            />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Confirm Password
-              </label>
-              <input
-                type="password"
-                name="passwordConfirm"
-                placeholder="••••••••"
-                value={formData.passwordConfirm}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
+            <UITextInput
+              type="password"
+              name="passwordConfirm"
+              label="Confirm Password"
+              placeholder="••••••••"
+              value={formData.passwordConfirm}
+              onChange={handleInputChange}
+              required
+            />
 
             <div className="space-y-4 pt-2">
-              <button
+              <UIButton
                 type="button"
                 onClick={handleCreateAccount}
-                className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                className="w-full"
               >
                 Create Account
-              </button>
+              </UIButton>
 
               <p className="text-center text-sm text-gray-600">
                 Already have an account?{" "}
-                <Link
-                  to="/login"
-                  className="text-blue-600 font-medium hover:underline"
-                >
-                  Login here
-                </Link>
+                <UILink href="/login">Login here</UILink>
               </p>
             </div>
           </form>
-        </div>
+        </UICard>
       </div>
     </React.Fragment>
   );

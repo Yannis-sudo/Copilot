@@ -5,7 +5,7 @@ import LoginPage from "./pages/LoginPage";
 import AIChatPage from "./pages/AIChatPage";
 import NotesPage from "./pages/NotesPage";
 import CreateAccountPage from "./pages/CreateAccountPage";
-import UINavbar from "./components/layout/UINavbar";
+import UINavbar from "./components/UINavbar";
 import "./App.css";
 import "./index.css";
 import EmailPage from "./pages/EmailPage";

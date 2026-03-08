@@ -1,3 +1,4 @@
+import React from "react";
 import { Link } from "react-router-dom";
 
 interface NavLink {
@@ -13,7 +14,10 @@ interface UINavbarProps {
   title?: string;
 }
 
-function UINavbar({ links, title = "Copilot" }: UINavbarProps): React.ReactElement {
+export default function UINavbar({
+  links,
+  title = "Copilot",
+}: UINavbarProps): React.ReactElement {
   return (
     <nav className="bg-gray-900 text-white">
       <div className="max-w-7xl mx-auto px-4">
@@ -56,5 +60,3 @@ function UINavbar({ links, title = "Copilot" }: UINavbarProps): React.ReactEleme
     </nav>
   );
 }
-
-export default UINavbar;

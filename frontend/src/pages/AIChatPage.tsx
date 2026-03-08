@@ -1,4 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
+import UIChatBubble from "../components/UIChatBubble";
+import UITypingIndicator from "../components/UITypingIndicator";
+import UIChatTextArea from "../components/UIChatTextArea";
 
 // Message shape
 interface Message {
@@ -15,44 +18,6 @@ const INITIAL_MESSAGES: Message[] = [
     text: "Hey! I'm your AI assistant. How can I help you today?",
   },
 ];
-
-// Single chat message - AI responses are plain text, user messages are bubbles
-function ChatBubble({ message }: { message: Message }) {
-  const isUser = message.role === "user";
-
-  // AI response: no bubble, plain text centered in the chat area
-  if (!isUser) {
-    return (
-      <div className="w-full max-w-2xl mx-auto mb-6 px-4">
-        <p className="text-sm text-gray-700 leading-relaxed">{message.text}</p>
-      </div>
-    );
-  }
-
-  // User message: right-aligned dark bubble
-  return (
-    <div className="flex w-full justify-end mb-4">
-      <div className="max-w-[75%] px-4 py-2.5 rounded-2xl rounded-br-sm text-sm leading-relaxed shadow-sm bg-gray-900 text-white">
-        {message.text}
-      </div>
-    </div>
-  );
-}
-
-// Animated typing indicator
-function TypingIndicator() {
-  return (
-    <div className="flex items-center gap-1.5 px-4 py-3 bg-gray-100 outline outline-2 outline-gray-200 rounded-2xl rounded-bl-sm w-fit shadow-sm mb-4">
-      {[0, 1, 2].map((i) => (
-        <span
-          key={i}
-          className="w-2 h-2 bg-gray-600 rounded-full animate-bounce"
-          style={{ animationDelay: `${i * 0.15}s` }}
-        />
-      ))}
-    </div>
-  );
-}
 
 function AIChatPage(): React.ReactElement {
   const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
@@ -122,57 +87,22 @@ function AIChatPage(): React.ReactElement {
         {/* Scrollable message area */}
         <div className="flex-1 overflow-y-auto px-4 md:px-20 lg:px-40 py-6">
           {messages.map((msg) => (
-            <ChatBubble key={msg.id} message={msg} />
+            <UIChatBubble key={msg.id} message={msg.text} role={msg.role} />
           ))}
 
-          {isTyping && <TypingIndicator />}
+          {isTyping && <UITypingIndicator />}
 
           <div ref={bottomRef} />
         </div>
 
-        {/* Input bar - white with a light top border as separator */}
-        <div className="bg-white border-t border-gray-200 px-4 md:px-20 lg:px-40 py-4 shrink-0">
-          <div className="flex items-center gap-3 bg-white border-2 border-blue-200 rounded-2xl px-4 py-2 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all">
-            <textarea
-              rows={1}
-              value={input}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-              placeholder="Type a message..."
-              className="flex-1 bg-transparent resize-none text-sm text-gray-800 placeholder-gray-400 focus:outline-none leading-relaxed self-center"
-              style={{ maxHeight: "160px" }}
-            />
-
-            {/* Send button */}
-            <button
-              onClick={handleSend}
-              disabled={!input.trim() || isTyping}
-              className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0"
-              aria-label="Send message"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                className="w-4 h-4"
-              >
-                <path d="M3.478 2.405a.75.75 0 0 0-.926.94l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.405Z" />
-              </svg>
-            </button>
-          </div>
-
-          <p className="text-center text-xs text-gray-400 mt-2">
-            Press{" "}
-            <kbd className="px-1 py-0.5 bg-gray-100 border border-gray-200 rounded text-gray-500">
-              Enter
-            </kbd>{" "}
-            to send,{" "}
-            <kbd className="px-1 py-0.5 bg-gray-100 border border-gray-200 rounded text-gray-500">
-              Shift+Enter
-            </kbd>{" "}
-            for a new line
-          </p>
-        </div>
+        {/* Input bar */}
+        <UIChatTextArea
+          value={input}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
+          onSend={handleSend}
+          disabled={isTyping}
+        />
       </div>
     </React.Fragment>
   );

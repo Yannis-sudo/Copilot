@@ -1,8 +1,14 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { login } from "../api";
 import { AUTH_MESSAGES } from "../constants";
 import type { LoginPayload } from "../types";
+import UICard from "../components/UICard";
+import UITextInput from "../components/UITextInput";
+import UICheckbox from "../components/UICheckbox";
+import UIButton from "../components/UIButton";
+import UIErrorMessage from "../components/UIErrorMessage";
+import UILink from "../components/UILink";
 
 interface LoginPageProps {
   setUser: (user: { email: string, password: string }) => void;
@@ -49,74 +55,54 @@ function LoginPage({ setUser }: LoginPageProps): React.ReactElement {
   return (
     <React.Fragment>
       <div className="min-h-screen flex items-center justify-center bg-gray-100 overflow-hidden">
-        <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md outline outline-2 outline-blue-200">
+        <UICard className="w-full max-w-md">
           <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
             Login
           </h2>
 
           <form className="space-y-5" onSubmit={handleLogin}>
-            {error && (
-              <div className="text-red-600 text-sm font-medium">{error}</div>
-            )}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email
-              </label>
-              <input
-                type="email"
-                name="email"
-                placeholder="you@example.com"
-                value={credentials.email}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
+            <UIErrorMessage message={error || ""} />
+            <UITextInput
+              type="email"
+              name="email"
+              label="Email"
+              placeholder="you@example.com"
+              value={credentials.email}
+              onChange={handleInputChange}
+              required
+            />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Password
-              </label>
-              <input
-                type="password"
-                name="password"
-                placeholder="••••••••"
-                value={credentials.password}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
+            <UITextInput
+              type="password"
+              name="password"
+              label="Password"
+              placeholder="••••••••"
+              value={credentials.password}
+              onChange={handleInputChange}
+              required
+            />
 
             <div className="flex items-center justify-between text-sm">
-              <label className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 accent-blue-600"
-                />
-                <span className="text-gray-600">Remember me</span>
-              </label>
+              <UICheckbox label="Remember me" />
 
-              <a href="#" className="text-blue-600 hover:underline">
+              <UILink
+                href="#"
+                external
+                className="text-blue-600 hover:underline"
+              >
                 Forgot password?
-              </a>
+              </UILink>
             </div>
 
-            <button
-              type="submit"
-              className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
-            >
+            <UIButton type="submit" className="w-full">
               Sign In
-            </button>
+            </UIButton>
             <p className="text-center text-sm text-gray-600">
               Don't have an account?{" "}
-              <Link
-                to="/create-account"
-                className="text-blue-600 font-medium hover:underline"
-              >
-                Sign Up
-              </Link>
+              <UILink href="/create-account">Sign Up</UILink>
             </p>
           </form>
-        </div>
+        </UICard>
       </div>
     </React.Fragment>
   );
