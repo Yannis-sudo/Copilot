@@ -7,16 +7,15 @@ import UITextInput from "../components/UITextInput";
 import UIButton from "../components/UIButton";
 import UIErrorMessage from "../components/UIErrorMessage";
 import UILink from "../components/UILink";
+import { useSettings } from "../context/SettingsContext";
 
 interface CreateAccountFormState extends CreateAccountPayload {
     passwordConfirm: string;
 }
 
-interface CreateAccountPageProps {
-    darkMode?: boolean;
-}
-
-function CreateAccountPage({ darkMode = false }: CreateAccountPageProps): React.ReactElement {
+function CreateAccountPage(): React.ReactElement {
+  const { settings } = useSettings();
+  const { darkMode } = settings;
     const navigate = useNavigate();
     const [formData, setFormData] = useState<CreateAccountFormState>({
         email: "",

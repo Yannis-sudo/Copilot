@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import UIChatBubble from "../components/UIChatBubble";
 import UITypingIndicator from "../components/UITypingIndicator";
 import UIChatTextArea from "../components/UIChatTextArea";
+import { useSettings } from "../context/SettingsContext";
 
 // Message shape
 interface Message {
@@ -19,11 +20,9 @@ const INITIAL_MESSAGES: Message[] = [
   },
 ];
 
-interface AIChatPageProps {
-  darkMode?: boolean;
-}
-
-function AIChatPage({ darkMode = false }: AIChatPageProps): React.ReactElement {
+function AIChatPage(): React.ReactElement {
+  const { settings } = useSettings();
+  const { darkMode } = settings;
   const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);

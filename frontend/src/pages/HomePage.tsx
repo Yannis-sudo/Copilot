@@ -1,10 +1,10 @@
 import React from "react";
+import { useSettings } from "../context/SettingsContext";
 
-interface HomePageProps {
-  darkMode?: boolean;
-}
+function HomePage() {
+    const { settings } = useSettings();
+    const { darkMode } = settings;
 
-function HomePage({ darkMode = false }: HomePageProps) {
     return (
         <React.Fragment>
             <div className={`flex-1 flex items-center justify-center ${darkMode ? "bg-dark" : "bg-gray-100"}`}>

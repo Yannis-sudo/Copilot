@@ -17,6 +17,7 @@ export default function UIIconButton({
     variant = "default",
     darkMode = false,
 }: UIIconButtonProps): React.ReactElement {
+    const darkModeStyle = darkMode ? "border border-gray-600" : "";
     const variantStyles = {
         default: "text-gray-400 hover:text-[#a78bfa] hover:bg-[rgba(124,58,237,0.12)]",
         danger:  "text-gray-400 hover:text-red-400 hover:bg-[rgba(124,58,237,0.08)]",
@@ -29,7 +30,7 @@ export default function UIIconButton({
             type="button"
             onClick={onClick}
             title={title}
-            className={`w-9 h-9 flex items-center justify-center rounded-lg transition-colors ${variantStyles[variant]} ${className}`}
+            className={`w-9 h-9 flex items-center justify-center rounded-lg transition-colors ${variantStyles[variant]} ${darkModeStyle} ${className}`}
         >
             {icon}
         </button>

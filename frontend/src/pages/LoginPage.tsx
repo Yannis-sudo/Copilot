@@ -2,21 +2,19 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { login } from "../api";
 import { AUTH_MESSAGES } from "../constants";
-import type { LoginPayload, User } from "../types";
+import type { LoginPayload } from "../types";
 import UITextInput from "../components/UITextInput";
 import UICheckbox from "../components/UICheckbox";
 import UIButton from "../components/UIButton";
 import UIErrorMessage from "../components/UIErrorMessage";
 import UILink from "../components/UILink";
+import { useSettings } from "../context/SettingsContext";
 
-interface LoginPageProps {
-    setUser: (user: User) => void;
-    darkMode?: boolean;
-}
-
-function LoginPage({ setUser, darkMode = false }: LoginPageProps): React.ReactElement {
-    const navigate = useNavigate();
-    const [credentials, setCredentials] = useState<LoginPayload>({
+function LoginPage(): React.ReactElement {
+  const navigate = useNavigate();
+  const { settings, setUser } = useSettings();
+  const { darkMode } = settings;
+  const [credentials, setCredentials] = useState<LoginPayload>({
         email: "",
         password: "",
     });

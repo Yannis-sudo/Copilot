@@ -1,5 +1,5 @@
+import React, { useEffect, useState } from "react";
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
-import { useState, useEffect } from "react";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import AIChatPage from "./pages/AIChatPage";
@@ -9,6 +9,7 @@ import UINavbar from "./components/UINavbar";
 import "./App.css";
 import "./index.css";
 import EmailPage from "./pages/EmailPage";
+import { useSettings } from "./context/SettingsContext";
 
 interface NavLink {
   label: string;
@@ -17,28 +18,6 @@ interface NavLink {
   available: boolean;
   shown: boolean;
 }
-
-interface User {
-  username: string;
-  email: string;
-  password: string;
-}
-
-interface Settings {
-  // User settings
-  user: User;
-  // App settings
-  darkMode: boolean;
-}
-
-const INITIAL_SETTINGS: Settings = {
-  user: {
-    username: "",
-    email: "",
-    password: "",
-  },
-  darkMode: true,
-};
 
 const INITIAL_LINKS: NavLink[] = [
   {
@@ -89,26 +68,10 @@ function App(): React.ReactElement {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [settings, setSettings] = useState<Settings>(INITIAL_SETTINGS);
+  const { settings, toggleDarkMode } = useSettings();
 
   const [links, setLinks] = useState<NavLink[]>(INITIAL_LINKS);
   const [activePage, setActivePage] = useState<string>("/");
-
-  // Helper to update user settings
-  const setUser = (user: User) => {
-    setSettings((prev) => ({
-      ...prev,
-      user,
-    }));
-  };
-
-  // Helper to toggle dark mode
-  const toggleDarkMode = () => {
-    setSettings((prev) => ({
-      ...prev,
-      darkMode: !prev.darkMode,
-    }));
-  };
 
   // Update active link whenever route changes
   useEffect(() => {
@@ -167,12 +130,12 @@ function App(): React.ReactElement {
         onToggleDarkMode={toggleDarkMode}
       />
       <Routes>
-        <Route path="/" element={<HomePage darkMode={settings.darkMode} />} />
-        <Route path="/login" element={<LoginPage setUser={setUser} darkMode={settings.darkMode} />} />
-        <Route path="/create-account" element={<CreateAccountPage darkMode={settings.darkMode} />} />
-        <Route path="/ai-chat" element={<AIChatPage darkMode={settings.darkMode} />} />
-        <Route path="/notes" element={<NotesPage darkMode={settings.darkMode} />} />
-        <Route path="/email" element={<EmailPage darkMode={settings.darkMode} />} />
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/create-account" element={<CreateAccountPage />} />
+        <Route path="/ai-chat" element={<AIChatPage />} />
+        <Route path="/notes" element={<NotesPage />} />
+        <Route path="/email" element={<EmailPage />} />
       </Routes>
     </div>
   );
