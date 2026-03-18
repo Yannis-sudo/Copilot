@@ -5,11 +5,14 @@ import LoginPage from "./pages/LoginPage";
 import AIChatPage from "./pages/AIChatPage";
 import NotesPage from "./pages/NotesPage";
 import CreateAccountPage from "./pages/CreateAccountPage";
+import DevPage from "./pages/DevPage";
+import EmailPage from "./pages/EmailPage";
 import UINavbar from "./components/UINavbar";
+import NotFoundPage from "./pages/NotFoundPage";
 import "./App.css";
 import "./index.css";
-import EmailPage from "./pages/EmailPage";
 import { useSettings } from "./context/SettingsContext";
+import EmailSetupPage from "./pages/EmailSetupPage";
 
 interface NavLink {
   label: string;
@@ -18,6 +21,10 @@ interface NavLink {
   available: boolean;
   shown: boolean;
 }
+
+// Routes that do not require a logged-in user.
+// Defined as a constant so the auth guard never has to wait for state to update.
+const PUBLIC_ROUTES = ["/login", "/create-account"];
 
 const INITIAL_LINKS: NavLink[] = [
   {
@@ -49,6 +56,13 @@ const INITIAL_LINKS: NavLink[] = [
     shown: true,
   },
   {
+    label: "Dev",
+    href: "/dev",
+    active: false,
+    available: true,
+    shown: true,
+  },
+  {
     label: "Login",
     href: "/login",
     active: false,
@@ -62,6 +76,13 @@ const INITIAL_LINKS: NavLink[] = [
     available: true,
     shown: false,
   },
+  {
+    label: "Email Setup",
+    href: "/email-setup",
+    active: false,
+    available: false,
+    shown: false,
+  },
 ];
 
 function App(): React.ReactElement {
@@ -73,7 +94,7 @@ function App(): React.ReactElement {
   const [links, setLinks] = useState<NavLink[]>(INITIAL_LINKS);
   const [activePage, setActivePage] = useState<string>("/");
 
-  // Update active link whenever route changes
+  // Update the active link highlight whenever the route changes
   useEffect(() => {
     setLinks((prev) =>
       prev.map((link) => ({
@@ -83,22 +104,24 @@ function App(): React.ReactElement {
     );
   }, [location.pathname]);
 
-  // Update active page title
+  // Update the navbar title to match the current page
   useEffect(() => {
     const currentLink = links.find((link) => link.href === location.pathname);
     setActivePage(currentLink?.label || "Copilot");
   }, [links]);
 
-  // Check if user is logged in and redirect if accessing protected routes
+  // Auth guard — redirect to login if the user is not logged in and the route is protected.
+  // Uses PUBLIC_ROUTES constant instead of links.available to avoid a race condition where
+  // the links state has not updated yet when the guard runs after navigation.
   useEffect(() => {
-    const currentLink = links.find((link) => link.href === location.pathname);
-    const isPublicRoute = currentLink?.available === true;
+    const isPublicRoute = PUBLIC_ROUTES.includes(location.pathname);
 
     if (!settings.user.email && !isPublicRoute) {
       navigate("/login");
     }
-  }, [settings.user, location.pathname, links, navigate]);
+  }, [settings.user, location.pathname, navigate]);
 
+  // Unlock all nav links once the user is logged in
   useEffect(() => {
     if (settings.user.email && settings.user.password) {
       setLinks((prev) =>
@@ -136,6 +159,9 @@ function App(): React.ReactElement {
         <Route path="/ai-chat" element={<AIChatPage />} />
         <Route path="/notes" element={<NotesPage />} />
         <Route path="/email" element={<EmailPage />} />
+        <Route path="/email-setup" element={<EmailSetupPage />} />
+        <Route path="/dev" element={<DevPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </div>
   );

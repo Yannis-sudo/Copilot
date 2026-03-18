@@ -61,3 +61,13 @@ export async function login(payload: LoginPayload): Promise<ApiResponse> {
     body: JSON.stringify(payload),
   });
 }
+
+/**
+ * Fetch emails from the user from the cloud
+ * */
+export async function fetchEmails(payload: LoginPayload): Promise<ApiResponse> {
+  return makeRequest<ApiResponse>(API_CONFIG.ENDPOINTS.FETCH_EMAILS, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}

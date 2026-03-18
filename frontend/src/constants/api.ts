@@ -10,6 +10,7 @@ export const API_CONFIG = {
   ENDPOINTS: {
     CREATE_ACCOUNT: "/create-account",
     LOGIN: "/login",
+    FETCH_EMAILS: "/getemails",
   },
 } as const;
 

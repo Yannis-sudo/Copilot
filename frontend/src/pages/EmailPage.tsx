@@ -1,9 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import UIEmailDetail from "../components/containers/UIEmailDetail";
 import UIButton from "../components/UIButton";
 import UITextInput from "../components/UITextInput";
 import UIIconButton from "../components/UIIconButton";
 import { useSettings } from "../context/SettingsContext";
+import { fetchEmails } from "../api";
+import { AUTH_MESSAGES } from "../constants";
+import { useNavigate } from "react-router-dom";
 
 // Types for emails and folders
 interface Email {
@@ -105,6 +108,8 @@ const initialFolders: Folder[] = [
 ];
 
 function EmailPage() {
+    const navigate = useNavigate();
+
     const { settings, setShowFolderPreview } = useSettings();
     const { darkMode } = settings;
     const [folders, setFolders] = useState<Folder[]>(initialFolders);
@@ -118,6 +123,38 @@ function EmailPage() {
 
     const selectedFolder = folders.find((f) => f.id === selectedFolderId) || folders[0];
     const selectedEmail = selectedFolder.emails.find((e) => e.id === selectedEmailId) || null;
+    const showFolderPreview = settings.showFolderPreview;
+
+    // Fetch emails from the backend on page load.
+    // The backend uses the stored credentials to connect to the user's mail server.
+    const getEmails = async () => {
+        const email = settings.user.email;
+        const password = settings.user.password;
+        const res = await fetchEmails({ email, password });
+
+        if (res.message === AUTH_MESSAGES.INVALID_CREDENTIALS) {
+            // Credentials are wrong — send back to login
+            alert("Invalid credentials. Please check your email and password.");
+            navigate("/login");
+            return;
+        }
+
+        if (res.message === AUTH_MESSAGES.EMAIL_NOT_FOUND) {
+            // No mail account configured yet — redirect to setup page
+            navigate("/email-setup");
+            return;
+        }
+
+        // On success, replace the placeholder folders with real data from the API
+        if (res.data) {
+            setFolders(res.data);
+        }
+    };
+
+    // Run getEmails once when the component mounts
+    useEffect(() => {
+        getEmails();
+    }, []);
 
     const handleSelectFolder = (folderId: string) => {
         setSelectedFolderId(folderId);
@@ -223,7 +260,7 @@ function EmailPage() {
                                         </button>
                                     </div>
 
-                                    {/* Inline email list */}
+                                    {/* Inline email list — visible when folder preview panel is hidden */}
                                     {showInlineEmails && !isCollapsed && (
                                         <div className="ml-6 mt-0.5 space-y-0.5">
                                             {folder.emails.length === 0 ? (
@@ -251,15 +288,15 @@ function EmailPage() {
                         })}
                     </nav>
 
-                    {/* Bottom bar */}
+                    {/* Bottom bar — toggle preview mode and action buttons */}
                     <div className="p-3 border-t border-[rgba(124,58,237,0)] flex justify-between items-center gap-2">
-                        <button
+                        <UIButton
                             type="button"
-                            onClick={() => setShowFolderPreview(!settings.showFolderPreview)}
+                            onClick={() => setShowFolderPreview(!showFolderPreview)}
                             className={`text-xs px-3 py-1 rounded-md ${darkMode ? "bg-[#3b3b3b] text-white" : "bg-white text-gray-700"}`}
                         >
-                            {settings.showFolderPreview ? "Hide preview" : "Show preview"}
-                        </button>
+                            {showFolderPreview ? "Hide preview" : "Show preview"}
+                        </UIButton>
                         <div className="flex gap-2">
                             <UIIconButton
                                 onClick={handleCompose}
@@ -361,7 +398,7 @@ function EmailPage() {
                                             placeholder="Write your message here..."
                                             value={compose.body}
                                             onChange={(e) => setCompose({ ...compose, body: e.target.value })}
-                                            className="w-full px-4 py-2 rounded-lg border border-[#7c3aed] text-gray-100 placeholder:text-[rgba(124,58,237,0.45)] focus:outline-none focus:ring-2 focus:ring-[#7c3aed] resize-none transition-all"
+                                            className="w-full px-4 py-2 rounded-lg border border-[#7c3aed] bg-transparent text-gray-100 placeholder:text-[rgba(124,58,237,0.45)] focus:outline-none focus:ring-2 focus:ring-[#7c3aed] resize-none transition-all"
                                         />
                                     </div>
                                     <div className="flex gap-3">
