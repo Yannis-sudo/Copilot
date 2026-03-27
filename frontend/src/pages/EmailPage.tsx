@@ -141,12 +141,13 @@ function EmailPage() {
 
         if (res.message === AUTH_MESSAGES.EMAIL_NOT_FOUND) {
             // No mail account configured yet — redirect to setup page
+
             navigate("/email-setup");
             return;
         }
 
         // On success, replace the placeholder folders with real data from the API
-        if (res.data) {
+        if (res.message === AUTH_MESSAGES.EMAILS_FETCHED && res.data) {
             setFolders(res.data);
         }
     };

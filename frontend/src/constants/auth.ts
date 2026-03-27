@@ -8,4 +8,5 @@ export const AUTH_MESSAGES = {
   PASSWORDS_MISMATCH: "Passwords do not match",
   SUCCESS: "success",
   EMAIL_NOT_FOUND: "Email not found",
+  EMAILS_FETCHED: "Emails retrieved successfully",
 } as const;
