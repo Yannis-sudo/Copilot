@@ -60,7 +60,7 @@ const INITIAL_LINKS: NavLink[] = [
     href: "/dev",
     active: false,
     available: true,
-    shown: true,
+    shown: false,
   },
   {
     label: "Login",
