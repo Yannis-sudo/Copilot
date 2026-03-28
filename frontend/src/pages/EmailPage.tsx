@@ -130,7 +130,10 @@ function EmailPage() {
     const getEmails = async () => {
         const email = settings.user.email;
         const password = settings.user.password;
+        console.log("Fetching emails with credentials:", { email, password: "***" });
+        
         const res = await fetchEmails({ email, password });
+        console.log("Fetch emails response:", res);
 
         if (res.message === AUTH_MESSAGES.INVALID_CREDENTIALS) {
             // Credentials are wrong — send back to login
@@ -141,7 +144,7 @@ function EmailPage() {
 
         if (res.message === AUTH_MESSAGES.EMAIL_NOT_FOUND) {
             // No mail account configured yet — redirect to setup page
-
+            console.log("Email not found, redirecting to setup");
             navigate("/email-setup");
             return;
         }

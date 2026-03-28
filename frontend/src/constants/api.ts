@@ -11,6 +11,7 @@ export const API_CONFIG = {
     CREATE_ACCOUNT: "/create-account",
     LOGIN: "/login",
     FETCH_EMAILS: "/getemails",
+    ADD_EMAIL_SERVER: "/addemailserver",
   },
 } as const;
 

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSettings } from "../context/SettingsContext";
+import { addEmailServer } from "../api";
 import UITextInput from "../components/UITextInput";
 import UIButton from "../components/UIButton";
 import UIErrorMessage from "../components/UIErrorMessage";
@@ -47,10 +48,28 @@ function EmailSetupPage() {
         setIsLoading(true);
 
         try {
-            // TODO: replace with a real API call that saves the mail account in the database
-            console.log("Saving email account config:", form);
+            console.log("Sending email server config:", {
+                email: form.email,
+                password: form.emailPassword,
+                server_incoming: form.imapServer,
+                server_outgoing: form.smtpServer,
+                server_incoming_port: parseInt(form.imapPort),
+                server_outgoing_port: parseInt(form.smtpPort),
+            });
+            
+            await addEmailServer({
+                email: form.email,
+                password: form.emailPassword,
+                server_incoming: form.imapServer,
+                server_outgoing: form.smtpServer,
+                server_incoming_port: parseInt(form.imapPort),
+                server_outgoing_port: parseInt(form.smtpPort),
+            });
+            
+            console.log("API call successful, navigating to /email");
             navigate("/email");
         } catch (err) {
+            console.error("API call failed:", err);
             setError(err instanceof Error ? err.message : "Failed to save email account.");
         } finally {
             setIsLoading(false);

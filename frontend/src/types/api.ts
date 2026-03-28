@@ -17,3 +17,12 @@ export interface LoginPayload {
   email: string;
   password: string;
 }
+
+export interface AddEmailServerPayload {
+  email: string;
+  server_incoming: string;
+  server_outgoing: string;
+  server_incoming_port: number;
+  server_outgoing_port: number;
+  password: string;
+}
