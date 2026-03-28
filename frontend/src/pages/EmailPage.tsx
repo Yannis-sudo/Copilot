@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import UIEmailDetail from "../components/containers/UIEmailDetail";
 import UIButton from "../components/UIButton";
 import UITextInput from "../components/UITextInput";
 import UIIconButton from "../components/UIIconButton";
@@ -10,13 +9,12 @@ import { useNavigate } from "react-router-dom";
 
 // Types for emails and folders
 interface Email {
-    id: number;
+    id: string;
     from: string;
     subject: string;
-    preview: string;
-    body: string;
     date: string;
-    read: boolean;
+    folder: string;
+    message_id: string;
 }
 
 interface Folder {
@@ -25,87 +23,8 @@ interface Folder {
     emails: Email[];
 }
 
-// Hardcoded email data — replace with API calls later
-const initialFolders: Folder[] = [
-    {
-        id: "inbox",
-        label: "Inbox",
-        emails: [
-            {
-                id: 1,
-                from: "alice@example.com",
-                subject: "Project Update",
-                preview: "Hey, just wanted to give you a quick update on the project...",
-                body: "Hey,\n\nJust wanted to give you a quick update on the project. We finished the initial design phase and are now moving into development. Let me know if you have any questions or concerns.\n\nBest,\nAlice",
-                date: "2026-03-06",
-                read: false,
-            },
-            {
-                id: 2,
-                from: "bob@company.com",
-                subject: "Meeting Tomorrow",
-                preview: "Don't forget we have a standup at 10am tomorrow morning...",
-                body: "Hi,\n\nDon't forget we have a standup at 10am tomorrow morning. The agenda includes sprint review and upcoming milestones. Please come prepared.\n\nThanks,\nBob",
-                date: "2026-03-05",
-                read: true,
-            },
-            {
-                id: 3,
-                from: "newsletter@techdigest.io",
-                subject: "Your Weekly Tech Digest",
-                preview: "This week in tech: AI breakthroughs, new framework releases...",
-                body: "Hello,\n\nThis week in tech: AI breakthroughs, new framework releases, and a deep dive into WebAssembly performance. Read on for the full summary.\n\n- The Tech Digest Team",
-                date: "2026-03-04",
-                read: true,
-            },
-        ],
-    },
-    {
-        id: "sent",
-        label: "Sent",
-        emails: [
-            {
-                id: 4,
-                from: "me@example.com",
-                subject: "Re: Project Update",
-                preview: "Thanks Alice! Great to hear, let me know if you need anything...",
-                body: "Thanks Alice!\n\nGreat to hear, let me know if you need anything from my side. Happy to help with testing once the first build is ready.\n\nCheers",
-                date: "2026-03-06",
-                read: true,
-            },
-        ],
-    },
-    {
-        id: "drafts",
-        label: "Drafts",
-        emails: [
-            {
-                id: 5,
-                from: "me@example.com",
-                subject: "Follow-up on proposal",
-                preview: "I wanted to follow up regarding the proposal I sent last week...",
-                body: "Hi,\n\nI wanted to follow up regarding the proposal I sent last week. Please let me know if you have had a chance to review it.\n\nBest",
-                date: "2026-03-03",
-                read: true,
-            },
-        ],
-    },
-    {
-        id: "trash",
-        label: "Trash",
-        emails: [
-            {
-                id: 6,
-                from: "spam@promo.net",
-                subject: "You have won a prize!",
-                preview: "Congratulations! Click here to claim your reward...",
-                body: "Congratulations!\n\nClick here to claim your reward. This offer expires in 24 hours.",
-                date: "2026-03-01",
-                read: true,
-            },
-        ],
-    },
-];
+// Initial empty folders - will be populated from API
+const initialFolders: Folder[] = [];
 
 function EmailPage() {
     const navigate = useNavigate();
@@ -114,15 +33,15 @@ function EmailPage() {
     const { darkMode } = settings;
     const [folders, setFolders] = useState<Folder[]>(initialFolders);
     const [selectedFolderId, setSelectedFolderId] = useState<string>("inbox");
-    const [selectedEmailId, setSelectedEmailId] = useState<number | null>(null);
+    const [selectedEmailId, setSelectedEmailId] = useState<string | null>(null);
     const [showCompose, setShowCompose] = useState(false);
     const [compose, setCompose] = useState({ to: "", subject: "", body: "" });
 
     // Track which folders are collapsed in the sidebar
     const [collapsedFolders, setCollapsedFolders] = useState<Set<string>>(new Set());
 
-    const selectedFolder = folders.find((f) => f.id === selectedFolderId) || folders[0];
-    const selectedEmail = selectedFolder.emails.find((e) => e.id === selectedEmailId) || null;
+    const selectedFolder = folders.find((f) => f.id === selectedFolderId) || (folders.length > 0 ? folders[0] : null);
+    const selectedEmail = selectedFolder?.emails.find((e) => e.id === selectedEmailId) || null;
     const showFolderPreview = settings.showFolderPreview;
 
     // Fetch emails from the backend on page load.
@@ -149,9 +68,27 @@ function EmailPage() {
             return;
         }
 
-        // On success, replace the placeholder folders with real data from the API
-        if (res.message === AUTH_MESSAGES.EMAILS_FETCHED && res.data) {
-            setFolders(res.data);
+        // On success, transform API data to frontend format
+        if (res.message === AUTH_MESSAGES.EMAILS_FETCHED && (res as any).emails) {
+            const apiData = (res as any).emails;
+            
+            // Transform folders and emails from API to frontend format
+            const transformedFolders: Folder[] = apiData.folders.map((folderName: string) => ({
+                id: folderName,
+                label: folderName,
+                emails: apiData.emails
+                    .filter((email: any) => email.folder === folderName)
+                    .map((email: any) => ({
+                        id: email.message_id,
+                        from: email.from,
+                        subject: email.subject,
+                        date: email.date,
+                        folder: email.folder,
+                        message_id: email.message_id
+                    }))
+            }));
+            
+            setFolders(transformedFolders);
         }
     };
 
@@ -165,7 +102,7 @@ function EmailPage() {
         setSelectedEmailId(null);
     };
 
-    const handleSelectEmail = (emailId: number) => {
+    const handleSelectEmail = (emailId: string) => {
         setSelectedEmailId(emailId);
         setShowCompose(false);
     };
@@ -216,7 +153,6 @@ function EmailPage() {
                 >
                     <nav className="flex-1 overflow-y-auto p-2">
                         {folders.map((folder) => {
-                            const unread = folder.emails.filter((e) => !e.read).length;
                             const isActive = folder.id === selectedFolderId;
                             const isCollapsed = collapsedFolders.has(folder.id);
                             const showInlineEmails = !settings.showFolderPreview;
@@ -256,11 +192,6 @@ function EmailPage() {
                                                 }`}
                                         >
                                             <span>{folder.label}</span>
-                                            {unread > 0 && (
-                                                <span className="bg-[#7c3aed] text-white text-xs rounded-full px-2 py-0.5">
-                                                    {unread}
-                                                </span>
-                                            )}
                                         </button>
                                     </div>
 
@@ -278,7 +209,7 @@ function EmailPage() {
                                                         className={`w-full text-left px-2 py-1.5 rounded-md text-xs transition-colors ${selectedEmailId === email.id
                                                             ? "bg-[rgba(124,58,237,0.18)] text-[#a78bfa]"
                                                             : "text-gray-500 hover:bg-[rgba(124,58,237,0.08)] hover:text-gray-300"
-                                                            } ${!email.read ? "font-semibold" : ""}`}
+                                                            }`}
                                                     >
                                                         <div className="truncate">{email.subject}</div>
                                                         <div className="text-gray-600 truncate text-xs">{email.from}</div>
@@ -331,8 +262,17 @@ function EmailPage() {
                 {/* Main content area */}
                 <main className="flex-1 flex overflow-hidden bg-[#1a1a1a]">
 
+                    {/* Show loading or empty state when no folders */}
+                    {!selectedFolder && (
+                        <div className="flex-1 flex items-center justify-center">
+                            <p className="text-sm text-gray-600">
+                                {folders.length === 0 ? "Loading emails..." : "Select a folder to view emails"}
+                            </p>
+                        </div>
+                    )}
+
                     {/* Email list panel — only shown when settings.showFolderPreview is true */}
-                    {settings.showFolderPreview && (
+                    {settings.showFolderPreview && selectedFolder && (
                         <div className="w-80 border-r border-[rgba(124,58,237,0.25)] bg-[#1a1a1a] flex flex-col shrink-0">
                             <div className="px-4 py-3 border-b border-[rgba(124,58,237,0.25)]">
                                 <h2 className="text-sm font-semibold text-gray-200">{selectedFolder.label}</h2>
@@ -354,15 +294,15 @@ function EmailPage() {
                                                 }`}
                                         >
                                             <div className="flex justify-between items-center mb-0.5">
-                                                <span className={`text-sm truncate ${!email.read ? "font-bold text-gray-100" : "font-medium text-gray-300"}`}>
+                                                <span className={`text-sm truncate font-medium text-gray-300`}>
                                                     {email.from}
                                                 </span>
                                                 <span className="text-xs text-gray-600 shrink-0 ml-2">{email.date}</span>
                                             </div>
-                                            <div className={`text-sm truncate ${!email.read ? "font-semibold text-gray-200" : "text-gray-400"}`}>
+                                            <div className={`text-sm truncate text-gray-400`}>
                                                 {email.subject}
                                             </div>
-                                            <div className="text-xs text-gray-600 truncate mt-0.5">{email.preview}</div>
+                                            <div className="text-xs text-gray-600 truncate mt-0.5">{email.date}</div>
                                         </button>
                                     ))
                                 )}
@@ -419,17 +359,32 @@ function EmailPage() {
 
                         {/* Email detail view */}
                         {!showCompose && selectedEmail && (
-                            <UIEmailDetail
-                                id={selectedEmail.id}
-                                from={selectedEmail.from}
-                                subject={selectedEmail.subject}
-                                preview={selectedEmail.preview}
-                                body={selectedEmail.body}
-                                date={selectedEmail.date}
-                                read={selectedEmail.read}
-                                onReply={handleCompose}
-                                darkMode={darkMode}
-                            />
+                            <div className="flex-1 overflow-hidden flex flex-col bg-[#1a1a1a] p-6">
+                                <div className="rounded-2xl p-6 max-w-4xl mx-auto w-full border border-[rgba(124,58,237,0.25)] bg-[rgba(124,58,237,0.08)] shadow-[0_0_48px_rgba(124,58,237,0.15)] backdrop-blur-sm">
+                                    <div className="mb-4">
+                                        <h2 className="text-xl font-bold text-gray-100 mb-2">{selectedEmail.subject}</h2>
+                                        <div className="flex justify-between items-center text-sm text-gray-400">
+                                            <span>From: {selectedEmail.from}</span>
+                                            <span>{selectedEmail.date}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="border-t border-[rgba(124,58,237,0.25)] pt-4">
+                                        <div className="text-gray-300">
+                                            <p className="text-sm">Email content would be displayed here. Full email body fetching can be implemented in a future update.</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="mt-6 flex gap-3">
+                                        <UIButton onClick={handleCompose} darkMode={darkMode}>
+                                            Reply
+                                        </UIButton>
+                                        <UIButton variant="secondary" darkMode={darkMode}>
+                                            Forward
+                                        </UIButton>
+                                    </div>
+                                </div>
+                            </div>
                         )}
 
                         {/* Empty state */}
