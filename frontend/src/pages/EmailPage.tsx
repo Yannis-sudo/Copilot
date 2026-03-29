@@ -5,7 +5,7 @@ import UIEmailDetail from "../components/containers/UIEmailDetail";
 import UIEmailCompose from "../components/containers/UIEmailCompose";
 import AddFolderModal from "../components/AddFolderModal";
 import { useSettings } from "../context/SettingsContext";
-import { fetchEmails, addFolder, getFolders } from "../api";
+import { fetchEmails, addFolder, getFolders, sendEmail } from "../api";
 import { AUTH_MESSAGES } from "../constants";
 import { useNavigate } from "react-router-dom";
 
@@ -267,10 +267,26 @@ function EmailPage() {
         setCompose({ to: "", subject: "", body: "" });
     };
 
-    const handleSendCompose = () => {
-        // Placeholder — will be replaced with API call
-        alert("Email sent (placeholder)");
-        setShowCompose(false);
+    const handleSendCompose = async () => {
+        try {
+            const email = settings.user.email;
+            const password = settings.user.password;
+            
+            await sendEmail({
+                to: compose.to,
+                subject: compose.subject,
+                body: compose.body,
+                email,
+                password
+            });
+            
+            alert("Email sent successfully!");
+            setShowCompose(false);
+            setCompose({ to: "", subject: "", body: "" });
+        } catch (error) {
+            console.error("Error sending email:", error);
+            alert("Failed to send email. Please try again.");
+        }
     };
 
     const handleToggleCollapse = (folderId: string) => {

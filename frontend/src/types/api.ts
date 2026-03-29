@@ -33,3 +33,11 @@ export interface AddFolderPayload {
   folder_name: string;
   parent_folder?: string;
 }
+
+export interface SendEmailPayload {
+  to: string;
+  subject: string;
+  body: string;
+  email: string;
+  password: string;
+}

@@ -6,7 +6,7 @@ import {
   API_CONFIG,
   ERROR_MESSAGES,
 } from "./constants";
-import type { ApiResponse, CreateAccountPayload, LoginPayload, AddEmailServerPayload, AddFolderPayload } from "./types";
+import type { ApiResponse, CreateAccountPayload, LoginPayload, AddEmailServerPayload, AddFolderPayload, SendEmailPayload } from "./types";
 
 /**
  * Make an API request with error handling
@@ -97,6 +97,16 @@ export async function addFolder(payload: AddFolderPayload): Promise<ApiResponse>
  */
 export async function getFolders(payload: LoginPayload): Promise<ApiResponse> {
   return makeRequest<ApiResponse>(API_CONFIG.ENDPOINTS.GET_FOLDERS, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+/**
+ * Send an email
+ */
+export async function sendEmail(payload: SendEmailPayload): Promise<ApiResponse> {
+  return makeRequest<ApiResponse>(API_CONFIG.ENDPOINTS.SEND_EMAIL, {
     method: "POST",
     body: JSON.stringify(payload),
   });
