@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import UIButton from "../components/UIButton";
-import UITextInput from "../components/UITextInput";
 import UIIconButton from "../components/UIIconButton";
 import UIEmailDetail from "../components/containers/UIEmailDetail";
+import UIEmailCompose from "../components/containers/UIEmailCompose";
 import AddFolderModal from "../components/AddFolderModal";
 import { useSettings } from "../context/SettingsContext";
 import { fetchEmails, addFolder, getFolders } from "../api";
@@ -24,10 +24,158 @@ interface Folder {
     id: string;
     label: string;
     emails: Email[];
+    children?: Folder[];
+    level?: number;
+    isExpanded?: boolean;
 }
 
 // Initial empty folders - will be populated from API
 const initialFolders: Folder[] = [];
+
+// Helper function to build hierarchical folder structure
+const buildFolderTree = (folders: Folder[]): Folder[] => {
+    const folderMap = new Map<string, Folder>();
+    const rootFolders: Folder[] = [];
+    
+    // Create a map of all folders
+    folders.forEach(folder => {
+        folderMap.set(folder.id, { ...folder, children: [] });
+    });
+    
+    // Build the tree structure
+    folders.forEach(folder => {
+        const folderNode = folderMap.get(folder.id)!;
+        const pathParts = folder.id.split('/');
+        
+        if (pathParts.length === 1) {
+            // This is a root folder
+            rootFolders.push(folderNode);
+        } else {
+            // This is a subfolder
+            const parentPath = pathParts.slice(0, -1).join('/');
+            const parentFolder = folderMap.get(parentPath);
+            
+            if (parentFolder) {
+                parentFolder.children!.push(folderNode);
+            } else {
+                // If parent doesn't exist, treat as root folder
+                rootFolders.push(folderNode);
+            }
+        }
+    });
+    
+    return rootFolders;
+};
+
+// Recursive component to render folder tree
+const FolderTreeItem: React.FC<{
+    folder: Folder;
+    level: number;
+    selectedFolderId: string;
+    collapsedFolders: Set<string>;
+    onSelectFolder: (id: string) => void;
+    onToggleCollapse: (id: string) => void;
+    showInlineEmails: boolean;
+    selectedEmailId: string | null;
+    onSelectEmail: (id: string) => void;
+}> = ({ 
+    folder, 
+    level, 
+    selectedFolderId, 
+    collapsedFolders, 
+    onSelectFolder, 
+    onToggleCollapse,
+    showInlineEmails,
+    selectedEmailId,
+    onSelectEmail
+}) => {
+    const isActive = folder.id === selectedFolderId;
+    const isCollapsed = collapsedFolders.has(folder.id);
+    const hasChildren = folder.children && folder.children.length > 0;
+    const indent = level * 16;
+    
+    return (
+        <div className="mb-1">
+            <div className="flex items-center gap-1" style={{ marginLeft: `${indent}px` }}>
+                {/* Collapse toggle for folders with children */}
+                {showInlineEmails && hasChildren && (
+                    <button
+                        type="button"
+                        onClick={() => onToggleCollapse(folder.id)}
+                        className="text-[rgba(124,58,237,0.50)] hover:text-[#7c3aed] transition-colors w-5 h-5 flex items-center justify-center shrink-0"
+                        title={isCollapsed ? "Expand" : "Collapse"}
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className={`w-3 h-3 transition-transform ${isCollapsed ? "-rotate-90" : ""}`}
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2.5}
+                        >
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                )}
+                
+                {/* Folder label button */}
+                <button
+                    type="button"
+                    onClick={() => onSelectFolder(folder.id)}
+                    className={`flex-1 flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isActive
+                        ? "bg-[rgba(124,58,237,0.18)] text-[#a78bfa]"
+                        : "text-gray-400 hover:bg-[rgba(124,58,237,0.08)] hover:text-gray-200"
+                        }`}
+                >
+                    <span className="flex items-center gap-2">
+                        {folder.label}
+                        {folder.emails && folder.emails.length > 0 && (
+                            <span className="text-xs text-gray-500 bg-[rgba(124,58,237,0.1)] px-1.5 py-0.5 rounded-full">
+                                {folder.emails.length}
+                            </span>
+                        )}
+                    </span>
+                </button>
+            </div>
+            
+            {/* Inline email list */}
+            {showInlineEmails && !isCollapsed && folder.emails && folder.emails.length > 0 && (
+                <div className="ml-6 mt-0.5 space-y-0.5" style={{ marginLeft: `${indent + 24}px` }}>
+                    {folder.emails.map((email) => (
+                        <button
+                            key={email.id}
+                            type="button"
+                            onClick={() => onSelectEmail(email.id)}
+                            className={`w-full text-left px-2 py-1.5 rounded-md text-xs transition-colors ${selectedEmailId === email.id
+                                ? "bg-[rgba(124,58,237,0.18)] text-[#a78bfa]"
+                                : "text-gray-500 hover:bg-[rgba(124,58,237,0.08)] hover:text-gray-300"
+                                }`}
+                        >
+                            <div className="truncate">{email.subject}</div>
+                            <div className="text-gray-600 truncate text-xs">{email.from}</div>
+                        </button>
+                    ))}
+                </div>
+            )}
+            
+            {/* Render children */}
+            {!isCollapsed && folder.children && folder.children.map((child) => (
+                <FolderTreeItem
+                    key={child.id}
+                    folder={child}
+                    level={level + 1}
+                    selectedFolderId={selectedFolderId}
+                    collapsedFolders={collapsedFolders}
+                    onSelectFolder={onSelectFolder}
+                    onToggleCollapse={onToggleCollapse}
+                    showInlineEmails={showInlineEmails}
+                    selectedEmailId={selectedEmailId}
+                    onSelectEmail={onSelectEmail}
+                />
+            ))}
+        </div>
+    );
+};
 
 function EmailPage() {
     const navigate = useNavigate();
@@ -77,10 +225,10 @@ function EmailPage() {
         if (res.message === AUTH_MESSAGES.EMAILS_FETCHED && (res as any).emails) {
             const apiData = (res as any).emails;
             
-            // Transform folders and emails from API to frontend format
+    // Transform folders and emails from API to frontend format
             const transformedFolders: Folder[] = apiData.folders.map((folderName: string) => ({
                 id: folderName,
-                label: folderName,
+                label: folderName.split('/').pop() || folderName, // Show only the last part of the path
                 emails: apiData.emails
                     .filter((email: any) => email.folder === folderName)
                     .map((email: any) => ({
@@ -185,75 +333,23 @@ function EmailPage() {
                     style={{ boxShadow: "4px 0 24px rgba(124,58,237,0.10)" }}
                 >
                     <nav className="flex-1 overflow-y-auto p-2">
-                        {folders.map((folder) => {
-                            const isActive = folder.id === selectedFolderId;
-                            const isCollapsed = collapsedFolders.has(folder.id);
-                            const showInlineEmails = !settings.showFolderPreview;
-
-                            return (
-                                <div key={folder.id} className="mb-1">
-                                    <div className="flex items-center gap-1">
-
-                                        {/* Collapse toggle */}
-                                        {showInlineEmails && (
-                                            <button
-                                                type="button"
-                                                onClick={() => handleToggleCollapse(folder.id)}
-                                                className="text-[rgba(124,58,237,0.50)] hover:text-[#7c3aed] transition-colors w-5 h-5 flex items-center justify-center shrink-0"
-                                                title={isCollapsed ? "Expand" : "Collapse"}
-                                            >
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    className={`w-3 h-3 transition-transform ${isCollapsed ? "-rotate-90" : ""}`}
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    stroke="currentColor"
-                                                    strokeWidth={2.5}
-                                                >
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                                                </svg>
-                                            </button>
-                                        )}
-
-                                        {/* Folder label button */}
-                                        <button
-                                            type="button"
-                                            onClick={() => handleSelectFolder(folder.id)}
-                                            className={`flex-1 flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isActive
-                                                ? "bg-[rgba(124,58,237,0.18)] text-[#a78bfa]"
-                                                : "text-gray-400 hover:bg-[rgba(124,58,237,0.08)] hover:text-gray-200"
-                                                }`}
-                                        >
-                                            <span>{folder.label}</span>
-                                        </button>
-                                    </div>
-
-                                    {/* Inline email list — visible when folder preview panel is hidden */}
-                                    {showInlineEmails && !isCollapsed && (
-                                        <div className="ml-6 mt-0.5 space-y-0.5">
-                                            {folder.emails.length === 0 ? (
-                                                <p className="text-xs text-gray-600 px-2 py-1">No emails</p>
-                                            ) : (
-                                                folder.emails.map((email) => (
-                                                    <button
-                                                        key={email.id}
-                                                        type="button"
-                                                        onClick={() => handleSelectEmail(email.id)}
-                                                        className={`w-full text-left px-2 py-1.5 rounded-md text-xs transition-colors ${selectedEmailId === email.id
-                                                            ? "bg-[rgba(124,58,237,0.18)] text-[#a78bfa]"
-                                                            : "text-gray-500 hover:bg-[rgba(124,58,237,0.08)] hover:text-gray-300"
-                                                            }`}
-                                                    >
-                                                        <div className="truncate">{email.subject}</div>
-                                                        <div className="text-gray-600 truncate text-xs">{email.from}</div>
-                                                    </button>
-                                                ))
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        })}
+                        {(() => {
+                            const folderTree = buildFolderTree(folders);
+                            return folderTree.map((folder) => (
+                                <FolderTreeItem
+                                    key={folder.id}
+                                    folder={folder}
+                                    level={0}
+                                    selectedFolderId={selectedFolderId}
+                                    collapsedFolders={collapsedFolders}
+                                    onSelectFolder={handleSelectFolder}
+                                    onToggleCollapse={handleToggleCollapse}
+                                    showInlineEmails={!settings.showFolderPreview}
+                                    selectedEmailId={selectedEmailId}
+                                    onSelectEmail={handleSelectEmail}
+                                />
+                            ));
+                        })()}
                     </nav>
 
                     {/* Bottom bar — toggle preview mode and action buttons */}
@@ -344,50 +440,21 @@ function EmailPage() {
                     )}
 
                     {/* Email viewer / compose panel */}
-                    <div className={`flex-1 overflow-hidden flex flex-col ${showCompose || !selectedEmail ? "bg-[#1a1a1a] p-6" : "bg-[#1a1a1a]"}`}>
+                    <div className={`flex-1 overflow-hidden flex flex-col`}>
 
                         {/* Compose view */}
                         {showCompose && (
-                            <div className="rounded-2xl p-6 max-w-2xl mx-auto w-full border border-[rgba(124,58,237,0.25)] bg-[rgba(124,58,237,0.08)] shadow-[0_0_48px_rgba(124,58,237,0.15)] backdrop-blur-sm">
-                                <h2 className="text-lg font-bold mb-4 text-gray-100">New Email</h2>
-
-                                <div className="space-y-4">
-                                    <UITextInput
-                                        type="email"
-                                        label="To"
-                                        placeholder="recipient@example.com"
-                                        value={compose.to}
-                                        onChange={(e) => setCompose({ ...compose, to: e.target.value })}
-                                        darkMode={darkMode}
-                                    />
-                                    <UITextInput
-                                        type="text"
-                                        label="Subject"
-                                        placeholder="Subject"
-                                        value={compose.subject}
-                                        onChange={(e) => setCompose({ ...compose, subject: e.target.value })}
-                                        darkMode={darkMode}
-                                    />
-                                    <div>
-                                        <label className="block text-sm font-medium mb-1 text-gray-300">Message</label>
-                                        <textarea
-                                            rows={10}
-                                            placeholder="Write your message here..."
-                                            value={compose.body}
-                                            onChange={(e) => setCompose({ ...compose, body: e.target.value })}
-                                            className="w-full px-4 py-2 rounded-lg border border-[#7c3aed] bg-transparent text-gray-100 placeholder:text-[rgba(124,58,237,0.45)] focus:outline-none focus:ring-2 focus:ring-[#7c3aed] resize-none transition-all"
-                                        />
-                                    </div>
-                                    <div className="flex gap-3">
-                                        <UIButton onClick={handleSendCompose} darkMode={darkMode}>
-                                            Send
-                                        </UIButton>
-                                        <UIButton onClick={() => setShowCompose(false)} variant="secondary" darkMode={darkMode}>
-                                            Discard
-                                        </UIButton>
-                                    </div>
-                                </div>
-                            </div>
+                            <UIEmailCompose
+                                to={compose.to}
+                                subject={compose.subject}
+                                body={compose.body}
+                                onToChange={(value) => setCompose({ ...compose, to: value })}
+                                onSubjectChange={(value) => setCompose({ ...compose, subject: value })}
+                                onBodyChange={(value) => setCompose({ ...compose, body: value })}
+                                onSend={handleSendCompose}
+                                onDiscard={() => setShowCompose(false)}
+                                darkMode={darkMode}
+                            />
                         )}
 
                         {/* Email detail view */}
@@ -409,7 +476,7 @@ function EmailPage() {
 
                         {/* Empty state */}
                         {!showCompose && !selectedEmail && (
-                            <div className="flex items-center justify-center h-full">
+                            <div className="flex items-center justify-center h-full bg-[#1a1a1a]">
                                 <p className="text-sm text-gray-600">Select an email to read it</p>
                             </div>
                         )}

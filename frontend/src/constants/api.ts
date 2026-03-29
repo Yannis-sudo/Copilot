@@ -3,7 +3,7 @@
  */
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:5555/api";
+  import.meta.env.VITE_API_URL || "http://10.168.5.137:5555/api";
 
 export const API_CONFIG = {
   BASE_URL: API_BASE_URL,
