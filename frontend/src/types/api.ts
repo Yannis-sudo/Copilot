@@ -40,4 +40,23 @@ export interface SendEmailPayload {
   body: string;
   email: string;
   password: string;
+  files?: File[];
+}
+
+export interface EmailAttachment {
+  filename: string;
+  content_type: string;
+  size: number;
+  content: string; // base64 encoded
+}
+
+export interface Email {
+  folder: string;
+  from: string;
+  subject: string;
+  date: string;
+  message_id: string;
+  body: string;
+  attachments: EmailAttachment[];
+  has_attachments: boolean;
 }

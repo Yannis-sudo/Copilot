@@ -103,11 +103,44 @@ export async function getFolders(payload: LoginPayload): Promise<ApiResponse> {
 }
 
 /**
- * Send an email
+ * Send an email with optional file attachments
  */
 export async function sendEmail(payload: SendEmailPayload): Promise<ApiResponse> {
-  return makeRequest<ApiResponse>(API_CONFIG.ENDPOINTS.SEND_EMAIL, {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
+  // Create FormData for file upload
+  const formData = new FormData();
+  
+  // Add text fields
+  formData.append('to', payload.to);
+  formData.append('subject', payload.subject);
+  formData.append('body', payload.body);
+  formData.append('email', payload.email);
+  formData.append('password', payload.password);
+  
+  // Add files if provided
+  if (payload.files && payload.files.length > 0) {
+    payload.files.forEach((file) => {
+      formData.append('files', file);
+    });
+  }
+  
+  const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SEND_EMAIL}`;
+  
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      body: formData, // Don't set Content-Type header, let browser set it with boundary
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.detail || error.message || "Request failed");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error(`API Error [${API_CONFIG.ENDPOINTS.SEND_EMAIL}]:`, error);
+    throw error instanceof Error
+      ? error
+      : new Error(ERROR_MESSAGES.NETWORK_ERROR);
+  }
 }

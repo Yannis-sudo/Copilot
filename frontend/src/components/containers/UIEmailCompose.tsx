@@ -1,6 +1,7 @@
 import UIButton from "../UIButton";
 import UIIconButton from "../UIIconButton";
 import UITextInput from "../UITextInput";
+import { useState, useRef } from "react";
 
 interface UIEmailComposeProps {
     to: string;
@@ -9,16 +10,34 @@ interface UIEmailComposeProps {
     onToChange: (value: string) => void;
     onSubjectChange: (value: string) => void;
     onBodyChange: (value: string) => void;
-    onSend: () => void;
+    onSend: (files?: File[]) => void;
     onDiscard: () => void;
     darkMode?: boolean;
 }
 
 export default function UIEmailCompose(props: UIEmailComposeProps) {
     const borderColor = "border-[rgba(255,255,255,0.06)]";
+    const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Placeholder handlers — wire up to API calls later
-    const handleAttachFile = () => {};
+    const handleAttachFile = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const files = event.target.files;
+        if (files) {
+            const newFiles = Array.from(files);
+            setAttachedFiles(prev => [...prev, ...newFiles]);
+        }
+        // Reset input value to allow selecting the same file again
+        event.target.value = '';
+    };
+
+    const handleRemoveFile = (index: number) => {
+        setAttachedFiles(prev => prev.filter((_, i) => i !== index));
+    };
+
     const handleSaveDraft = () => {};
 
     return (
@@ -87,6 +106,29 @@ export default function UIEmailCompose(props: UIEmailComposeProps) {
                         className="w-full px-4 py-3 rounded-lg border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.02)] text-gray-100 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#7c3aed] focus:border-transparent resize-none transition-all text-sm leading-relaxed"
                     />
                 </div>
+                
+                {/* Attached files display */}
+                {attachedFiles.length > 0 && (
+                    <div className="mt-4 space-y-2">
+                        <h4 className="text-sm font-medium text-gray-400">Attached Files:</h4>
+                        {attachedFiles.map((file, index) => (
+                            <div key={index} className="flex items-center justify-between bg-[rgba(255,255,255,0.05)] rounded-lg px-3 py-2">
+                                <span className="text-sm text-gray-300 truncate flex-1">
+                                    {file.name} ({(file.size / 1024).toFixed(1)} KB)
+                                </span>
+                                <button
+                                    onClick={() => handleRemoveFile(index)}
+                                    className="ml-2 text-red-400 hover:text-red-300 transition-colors"
+                                    title="Remove file"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
 
             {/* Footer — primary actions on the left, icon actions on the right */}
@@ -94,7 +136,7 @@ export default function UIEmailCompose(props: UIEmailComposeProps) {
 
                 {/* Primary actions */}
                 <div className="flex items-center gap-2">
-                    <UIButton onClick={props.onSend} darkMode={props.darkMode}>
+                    <UIButton onClick={() => props.onSend(attachedFiles)} darkMode={props.darkMode}>
                         <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                         </svg>
@@ -133,6 +175,16 @@ export default function UIEmailCompose(props: UIEmailComposeProps) {
                 </div>
 
             </div>
+
+            {/* Hidden file input */}
+            <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                onChange={handleFileSelect}
+                className="hidden"
+                accept="*/*"
+            />
 
         </div>
     );

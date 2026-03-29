@@ -2,6 +2,7 @@ import UIButton from "../UIButton";
 import UIIconButton from "../UIIconButton";
 import DOMPurify from "dompurify";
 import { useState } from "react";
+import type { EmailAttachment } from "../../types/api";
 
 interface UIEmailDetailProps {
     id: number;
@@ -11,6 +12,8 @@ interface UIEmailDetailProps {
     body: string;
     date: string;
     read: boolean;
+    attachments?: EmailAttachment[];
+    has_attachments?: boolean;
     onReply: () => void;
     darkMode?: boolean;
 }
@@ -45,6 +48,77 @@ export default function UIEmailDetail(props: UIEmailDetailProps) {
     const handleArchive = () => {};
     const handleMarkUnread = () => {};
     const handleStar = () => {};
+
+    // Download attachment
+    const handleDownloadAttachment = (attachment: EmailAttachment) => {
+        try {
+            // Convert base64 to blob
+            const byteCharacters = atob(attachment.content);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+                byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            const blob = new Blob([byteArray], { type: attachment.content_type });
+            
+            // Create download link
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = attachment.filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Error downloading attachment:', error);
+            alert('Failed to download attachment');
+        }
+    };
+
+    // Open attachment in new tab (for images and PDFs)
+    const handleOpenAttachment = (attachment: EmailAttachment) => {
+        try {
+            // Convert base64 to data URL
+            const dataUrl = `data:${attachment.content_type};base64,${attachment.content}`;
+            window.open(dataUrl, '_blank');
+        } catch (error) {
+            console.error('Error opening attachment:', error);
+            alert('Failed to open attachment');
+        }
+    };
+
+    // Format file size
+    const formatFileSize = (bytes: number): string => {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    };
+
+    // Get file icon based on content type
+    const getFileIcon = (contentType: string) => {
+        if (contentType.startsWith('image/')) {
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+            );
+        } else if (contentType.includes('pdf')) {
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+            );
+        } else {
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+            );
+        }
+    };
 
     const borderColor = "border-[rgba(255,255,255,0.06)]";
     const metaText = "text-xs text-gray-500";
@@ -112,6 +186,65 @@ export default function UIEmailDetail(props: UIEmailDetailProps) {
                         </p>
                     )}
                 </div>
+                
+                {/* Attachments section */}
+                {props.has_attachments && props.attachments && props.attachments.length > 0 && (
+                    <div className="mt-6 border-t border-gray-700 pt-4">
+                        <h3 className="text-sm font-semibold text-gray-300 mb-3 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                            </svg>
+                            Attachments ({props.attachments.length})
+                        </h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {props.attachments.map((attachment, index) => (
+                                <div
+                                    key={index}
+                                    className="flex items-center gap-3 p-3 bg-[rgba(255,255,255,0.05)] rounded-lg border border-gray-700 hover:border-gray-600 transition-colors"
+                                >
+                                    {/* File icon */}
+                                    <div className="text-gray-400 flex-shrink-0">
+                                        {getFileIcon(attachment.content_type)}
+                                    </div>
+                                    
+                                    {/* File info */}
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium text-gray-300 truncate" title={attachment.filename}>
+                                            {attachment.filename}
+                                        </p>
+                                        <p className="text-xs text-gray-500">
+                                            {formatFileSize(attachment.size)}
+                                        </p>
+                                    </div>
+                                    
+                                    {/* Action buttons */}
+                                    <div className="flex items-center gap-1 flex-shrink-0">
+                                        {attachment.content_type.startsWith('image/') || attachment.content_type.includes('pdf') ? (
+                                            <button
+                                                onClick={() => handleOpenAttachment(attachment)}
+                                                className="p-1 text-gray-400 hover:text-gray-200 transition-colors"
+                                                title="Open attachment"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                </svg>
+                                            </button>
+                                        ) : null}
+                                        <button
+                                            onClick={() => handleDownloadAttachment(attachment)}
+                                            className="p-1 text-gray-400 hover:text-gray-200 transition-colors"
+                                            title="Download attachment"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Footer — primary actions on the left, icon actions on the right */}

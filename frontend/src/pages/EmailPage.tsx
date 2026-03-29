@@ -8,6 +8,7 @@ import { useSettings } from "../context/SettingsContext";
 import { fetchEmails, addFolder, getFolders, sendEmail } from "../api";
 import { AUTH_MESSAGES } from "../constants";
 import { useNavigate } from "react-router-dom";
+import type { EmailAttachment } from "../types/api";
 
 // Types for emails and folders
 interface Email {
@@ -18,6 +19,8 @@ interface Email {
     folder: string;
     message_id: string;
     body: string;
+    attachments?: EmailAttachment[];
+    has_attachments?: boolean;
 }
 
 interface Folder {
@@ -238,7 +241,9 @@ function EmailPage() {
                         date: email.date,
                         folder: email.folder,
                         message_id: email.message_id,
-                        body: email.body
+                        body: email.body,
+                        attachments: email.attachments || [],
+                        has_attachments: email.has_attachments || false
                     }))
             }));
             
@@ -267,7 +272,7 @@ function EmailPage() {
         setCompose({ to: "", subject: "", body: "" });
     };
 
-    const handleSendCompose = async () => {
+    const handleSendCompose = async (files?: File[]) => {
         try {
             const email = settings.user.email;
             const password = settings.user.password;
@@ -277,7 +282,8 @@ function EmailPage() {
                 subject: compose.subject,
                 body: compose.body,
                 email,
-                password
+                password,
+                files
             });
             
             alert("Email sent successfully!");
@@ -484,6 +490,8 @@ function EmailPage() {
                                     body={selectedEmail.body}
                                     date={selectedEmail.date}
                                     read={true}
+                                    attachments={selectedEmail.attachments}
+                                    has_attachments={selectedEmail.has_attachments}
                                     onReply={handleCompose}
                                     darkMode={darkMode}
                                 />
