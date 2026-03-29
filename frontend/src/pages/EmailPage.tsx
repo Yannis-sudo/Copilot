@@ -2,8 +2,10 @@ import React, { useState, useEffect } from "react";
 import UIButton from "../components/UIButton";
 import UITextInput from "../components/UITextInput";
 import UIIconButton from "../components/UIIconButton";
+import UIEmailDetail from "../components/containers/UIEmailDetail";
+import AddFolderModal from "../components/AddFolderModal";
 import { useSettings } from "../context/SettingsContext";
-import { fetchEmails } from "../api";
+import { fetchEmails, addFolder, getFolders } from "../api";
 import { AUTH_MESSAGES } from "../constants";
 import { useNavigate } from "react-router-dom";
 
@@ -15,6 +17,7 @@ interface Email {
     date: string;
     folder: string;
     message_id: string;
+    body: string;
 }
 
 interface Folder {
@@ -36,6 +39,8 @@ function EmailPage() {
     const [selectedEmailId, setSelectedEmailId] = useState<string | null>(null);
     const [showCompose, setShowCompose] = useState(false);
     const [compose, setCompose] = useState({ to: "", subject: "", body: "" });
+    const [showAddFolderModal, setShowAddFolderModal] = useState(false);
+    const [availableFolders, setAvailableFolders] = useState<string[]>([]);
 
     // Track which folders are collapsed in the sidebar
     const [collapsedFolders, setCollapsedFolders] = useState<Set<string>>(new Set());
@@ -84,7 +89,8 @@ function EmailPage() {
                         subject: email.subject,
                         date: email.date,
                         folder: email.folder,
-                        message_id: email.message_id
+                        message_id: email.message_id,
+                        body: email.body
                     }))
             }));
             
@@ -131,15 +137,42 @@ function EmailPage() {
         });
     };
 
-    const handleAddFolder = () => {
-        const name = prompt("Folder name:");
-        if (!name || !name.trim()) return;
-        const newFolder: Folder = {
-            id: `folder-${Date.now()}`,
-            label: name.trim(),
-            emails: [],
-        };
-        setFolders((prev) => [...prev, newFolder]);
+    const handleAddFolder = async () => {
+        try {
+            const email = settings.user.email;
+            const password = settings.user.password;
+            
+            const res = await getFolders({ email, password });
+            console.log("Get folders response:", res);
+            if ((res as any).folders) {
+                setAvailableFolders((res as any).folders);
+                console.log("Available folders set:", (res as any).folders);
+            } else {
+                console.log("No folders found in response");
+            }
+            
+            setShowAddFolderModal(true);
+        } catch (error) {
+            console.error("Error fetching folders:", error);
+            alert("Failed to fetch folders. Please try again.");
+        }
+    };
+
+    const handleAddFolderSubmit = async (folderName: string, parentFolder?: string) => {
+        try {
+            const email = settings.user.email;
+            const password = settings.user.password;
+            
+            await addFolder({ email, password, folder_name: folderName, parent_folder: parentFolder });
+            
+            // Refresh emails to get the updated folder list
+            await getEmails();
+            
+            alert("Folder added successfully!");
+        } catch (error) {
+            console.error("Error adding folder:", error);
+            alert("Failed to add folder. Please try again.");
+        }
     };
 
     return (
@@ -359,31 +392,18 @@ function EmailPage() {
 
                         {/* Email detail view */}
                         {!showCompose && selectedEmail && (
-                            <div className="flex-1 overflow-hidden flex flex-col bg-[#1a1a1a] p-6">
-                                <div className="rounded-2xl p-6 max-w-4xl mx-auto w-full border border-[rgba(124,58,237,0.25)] bg-[rgba(124,58,237,0.08)] shadow-[0_0_48px_rgba(124,58,237,0.15)] backdrop-blur-sm">
-                                    <div className="mb-4">
-                                        <h2 className="text-xl font-bold text-gray-100 mb-2">{selectedEmail.subject}</h2>
-                                        <div className="flex justify-between items-center text-sm text-gray-400">
-                                            <span>From: {selectedEmail.from}</span>
-                                            <span>{selectedEmail.date}</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div className="border-t border-[rgba(124,58,237,0.25)] pt-4">
-                                        <div className="text-gray-300">
-                                            <p className="text-sm">Email content would be displayed here. Full email body fetching can be implemented in a future update.</p>
-                                        </div>
-                                    </div>
-                                    
-                                    <div className="mt-6 flex gap-3">
-                                        <UIButton onClick={handleCompose} darkMode={darkMode}>
-                                            Reply
-                                        </UIButton>
-                                        <UIButton variant="secondary" darkMode={darkMode}>
-                                            Forward
-                                        </UIButton>
-                                    </div>
-                                </div>
+                            <div className="flex-1 overflow-hidden">
+                                <UIEmailDetail
+                                    id={parseInt(selectedEmail.id)}
+                                    from={selectedEmail.from}
+                                    subject={selectedEmail.subject}
+                                    preview=""
+                                    body={selectedEmail.body}
+                                    date={selectedEmail.date}
+                                    read={true}
+                                    onReply={handleCompose}
+                                    darkMode={darkMode}
+                                />
                             </div>
                         )}
 
@@ -397,6 +417,15 @@ function EmailPage() {
                     </div>
                 </main>
             </div>
+            
+            {/* Add Folder Modal */}
+            <AddFolderModal
+                isOpen={showAddFolderModal}
+                onClose={() => setShowAddFolderModal(false)}
+                onAddFolder={handleAddFolderSubmit}
+                darkMode={darkMode}
+                availableFolders={availableFolders}
+            />
         </React.Fragment>
     );
 }

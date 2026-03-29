@@ -29,7 +29,7 @@ const defaultSettings: AppSettings = {
     password: "",
   },
   darkMode: true,
-  showFolderPreview: false,
+  showFolderPreview: true,
 };
 
 const SettingsContext = createContext<SettingsContextType>({

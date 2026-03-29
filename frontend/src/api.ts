@@ -6,7 +6,7 @@ import {
   API_CONFIG,
   ERROR_MESSAGES,
 } from "./constants";
-import type { ApiResponse, CreateAccountPayload, LoginPayload, AddEmailServerPayload } from "./types";
+import type { ApiResponse, CreateAccountPayload, LoginPayload, AddEmailServerPayload, AddFolderPayload } from "./types";
 
 /**
  * Make an API request with error handling
@@ -77,6 +77,26 @@ export async function fetchEmails(payload: LoginPayload): Promise<ApiResponse> {
  */
 export async function addEmailServer(payload: AddEmailServerPayload): Promise<ApiResponse> {
   return makeRequest<ApiResponse>(API_CONFIG.ENDPOINTS.ADD_EMAIL_SERVER, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+/**
+ * Add a new folder
+ */
+export async function addFolder(payload: AddFolderPayload): Promise<ApiResponse> {
+  return makeRequest<ApiResponse>(API_CONFIG.ENDPOINTS.ADD_FOLDER, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+/**
+ * Get all folders
+ */
+export async function getFolders(payload: LoginPayload): Promise<ApiResponse> {
+  return makeRequest<ApiResponse>(API_CONFIG.ENDPOINTS.GET_FOLDERS, {
     method: "POST",
     body: JSON.stringify(payload),
   });

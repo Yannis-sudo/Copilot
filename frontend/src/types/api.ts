@@ -26,3 +26,10 @@ export interface AddEmailServerPayload {
   server_outgoing_port: number;
   password: string;
 }
+
+export interface AddFolderPayload {
+  email: string;
+  password: string;
+  folder_name: string;
+  parent_folder?: string;
+}

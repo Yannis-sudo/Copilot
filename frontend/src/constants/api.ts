@@ -12,6 +12,8 @@ export const API_CONFIG = {
     LOGIN: "/login",
     FETCH_EMAILS: "/getemails",
     ADD_EMAIL_SERVER: "/addemailserver",
+    ADD_FOLDER: "/addfolder",
+    GET_FOLDERS: "/getfolders",
   },
 } as const;
 

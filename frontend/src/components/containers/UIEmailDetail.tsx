@@ -1,5 +1,7 @@
 import UIButton from "../UIButton";
 import UIIconButton from "../UIIconButton";
+import DOMPurify from "dompurify";
+import { useState } from "react";
 
 interface UIEmailDetailProps {
     id: number;
@@ -14,6 +16,27 @@ interface UIEmailDetailProps {
 }
 
 export default function UIEmailDetail(props: UIEmailDetailProps) {
+    const [showPlainText, setShowPlainText] = useState(false);
+
+    // Check if body contains HTML tags
+    const isHTML = /<[^>]+>/.test(props.body);
+    
+    // Sanitize HTML to prevent XSS attacks
+    const sanitizedHTML = isHTML ? DOMPurify.sanitize(props.body, {
+        ALLOWED_TAGS: [
+            'p', 'br', 'div', 'span', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+            'strong', 'b', 'em', 'i', 'u', 's', 'strike',
+            'ul', 'ol', 'li',
+            'a', 'img',
+            'table', 'tr', 'td', 'th', 'thead', 'tbody',
+            'blockquote', 'pre', 'code',
+            'hr'
+        ],
+        ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'style', 'class'],
+        ALLOW_DATA_ATTR: false,
+        FORBID_TAGS: ['script', 'object', 'embed', 'iframe', 'form', 'input', 'button'],
+        FORBID_ATTR: ['onclick', 'onload', 'onerror', 'onmouseover', 'onfocus']
+    }) : null;
 
     // Placeholder handlers — wire up to API calls later
     const handleReplyAll = () => {};
@@ -23,36 +46,76 @@ export default function UIEmailDetail(props: UIEmailDetailProps) {
     const handleMarkUnread = () => {};
     const handleStar = () => {};
 
+    const borderColor = "border-[rgba(255,255,255,0.06)]";
+    const metaText = "text-xs text-gray-500";
+
     return (
         <div className="flex flex-col h-full bg-[#1a1a1a]">
 
-            {/* Header */}
-            <div className="px-6 py-4 border-b border-[rgba(124,58,237,0)] shrink-0">
-                <h2 className="text-xl font-bold mb-2 text-gray-100">{props.subject}</h2>
-                <div className="flex justify-between items-center">
-                    <p className="text-sm text-gray-500">
-                        From: <span className="font-medium text-gray-300">{props.from}</span>
-                    </p>
-                    <div className="flex items-center gap-3">
+            {/* Header — email metadata */}
+            <div className={`px-6 py-5 border-b ${borderColor} shrink-0`}>
+
+                <h2 className="text-lg font-semibold text-gray-100 mb-3 leading-snug">
+                    {props.subject}
+                </h2>
+
+                {/* Sender row */}
+                <div className="flex items-center gap-3 mb-2">
+                    {/* Avatar placeholder using the first letter of the sender */}
+                    <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center shrink-0">
+                        <span className="text-xs font-semibold text-gray-300 uppercase">
+                            {props.from.charAt(0)}
+                        </span>
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-300 truncate">{props.from}</p>
+                        <p className={metaText}>To: me</p>
+                    </div>
+
+                    {/* Date and unread badge */}
+                    <div className="flex items-center gap-2 shrink-0">
                         {!props.read && (
-                            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[rgba(124,58,237,0.20)] text-[#a78bfa]">
+                            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-600 text-gray-200">
                                 Unread
                             </span>
                         )}
-                        <p className="text-xs text-gray-600">{props.date}</p>
+                        <p className={metaText}>{props.date}</p>
                     </div>
                 </div>
             </div>
 
             {/* Body — scrollable email content */}
-            <div className="flex-1 overflow-y-auto px-6 py-5 bg-[#1a1a1a]">
-                <p className="text-sm whitespace-pre-line leading-relaxed text-gray-300">
-                    {props.body}
-                </p>
+            <div className="flex-1 overflow-y-auto px-6 py-6">
+                {/* Toggle button for HTML/Plain Text view */}
+                {isHTML && (
+                    <div className="mb-4 flex justify-end">
+                        <button
+                            onClick={() => setShowPlainText(!showPlainText)}
+                            className="text-xs px-3 py-1 rounded-md border border-gray-600 text-gray-400 hover:text-gray-200 hover:border-gray-500 transition-colors"
+                        >
+                            {showPlainText ? "Show HTML" : "Show as plain text"}
+                        </button>
+                    </div>
+                )}
+                
+                {/* Email content */}
+                <div className="text-gray-300">
+                    {isHTML && !showPlainText && sanitizedHTML ? (
+                        <div
+                            className="prose prose-invert max-w-none prose-sm prose-headings:text-gray-100 prose-p:text-gray-300 prose-a:text-blue-400 prose-strong:text-gray-100 prose-code:text-gray-200"
+                            dangerouslySetInnerHTML={{ __html: sanitizedHTML }}
+                        />
+                    ) : (
+                        <p className="text-sm whitespace-pre-line leading-relaxed">
+                            {props.body}
+                        </p>
+                    )}
+                </div>
             </div>
 
-            {/* Footer — primary actions left, secondary actions right */}
-            <div className="px-6 py-4 border-t border-[rgba(124,58,237,0)] bg-[#1a1a1a] shrink-0 flex items-center justify-between">
+            {/* Footer — primary actions on the left, icon actions on the right */}
+            <div className={`px-6 py-4 border-t ${borderColor} shrink-0 flex items-center justify-between`}>
 
                 {/* Primary actions */}
                 <div className="flex items-center gap-2">
