@@ -51,6 +51,7 @@ export interface EmailAttachment {
 }
 
 export interface Email {
+  id: string;
   folder: string;
   from: string;
   subject: string;
@@ -59,4 +60,13 @@ export interface Email {
   body: string;
   attachments: EmailAttachment[];
   has_attachments: boolean;
+}
+
+export interface Folder {
+  id: string;
+  label: string;
+  emails: Email[];
+  children?: Folder[];
+  level?: number;
+  isExpanded?: boolean;
 }

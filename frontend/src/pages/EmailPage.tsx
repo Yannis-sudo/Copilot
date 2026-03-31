@@ -8,32 +8,7 @@ import { useSettings } from "../context/SettingsContext";
 import { fetchEmails, addFolder, getFolders, sendEmail } from "../api";
 import { AUTH_MESSAGES } from "../constants";
 import { useNavigate } from "react-router-dom";
-import type { EmailAttachment } from "../types/api";
-
-// Types for emails and folders
-interface Email {
-    id: string;
-    from: string;
-    subject: string;
-    date: string;
-    folder: string;
-    message_id: string;
-    body: string;
-    attachments?: EmailAttachment[];
-    has_attachments?: boolean;
-}
-
-interface Folder {
-    id: string;
-    label: string;
-    emails: Email[];
-    children?: Folder[];
-    level?: number;
-    isExpanded?: boolean;
-}
-
-// Initial empty folders - will be populated from API
-const initialFolders: Folder[] = [];
+import type { Folder } from "../types/api";
 
 // Helper function to build hierarchical folder structure
 const buildFolderTree = (folders: Folder[]): Folder[] => {
@@ -183,9 +158,8 @@ const FolderTreeItem: React.FC<{
 function EmailPage() {
     const navigate = useNavigate();
 
-    const { settings, setShowFolderPreview } = useSettings();
+    const { settings, setShowFolderPreview, setEmails, loadEmails } = useSettings();
     const { darkMode } = settings;
-    const [folders, setFolders] = useState<Folder[]>(initialFolders);
     const [selectedFolderId, setSelectedFolderId] = useState<string>("inbox");
     const [selectedEmailId, setSelectedEmailId] = useState<string | null>(null);
     const [showCompose, setShowCompose] = useState(false);
@@ -196,6 +170,7 @@ function EmailPage() {
     // Track which folders are collapsed in the sidebar
     const [collapsedFolders, setCollapsedFolders] = useState<Set<string>>(new Set());
 
+    const folders = buildFolderTree(settings.emails);
     const selectedFolder = folders.find((f) => f.id === selectedFolderId) || (folders.length > 0 ? folders[0] : null);
     const selectedEmail = selectedFolder?.emails.find((e) => e.id === selectedEmailId) || null;
     const showFolderPreview = settings.showFolderPreview;
@@ -247,13 +222,15 @@ function EmailPage() {
                     }))
             }));
             
-            setFolders(transformedFolders);
+            setEmails(transformedFolders);
         }
     };
 
-    // Run getEmails once when the component mounts
+    // Run getEmails once when the component mounts if no emails loaded
     useEffect(() => {
-        getEmails();
+        if (settings.emails.length === 0) {
+            getEmails();
+        }
     }, []);
 
     const handleSelectFolder = (folderId: string) => {
@@ -384,6 +361,24 @@ function EmailPage() {
                             {showFolderPreview ? "Hide preview" : "Show preview"}
                         </UIButton>
                         <div className="flex gap-2">
+                            <UIIconButton
+                                onClick={loadEmails}
+                                title="Reload emails"
+                                variant="dark"
+                                className="w-10 h-10 text-[#a78bfa]"
+                                icon={
+                                    settings.emailsLoading ? (
+                                        <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                    ) : (
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                        </svg>
+                                    )
+                                }
+                            />
                             <UIIconButton
                                 onClick={handleCompose}
                                 title="New Email"

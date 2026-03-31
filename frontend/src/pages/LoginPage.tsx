@@ -12,7 +12,7 @@ import { useSettings } from "../context/SettingsContext";
 
 function LoginPage(): React.ReactElement {
   const navigate = useNavigate();
-  const { settings, setUser } = useSettings();
+  const { settings, setUser, loadEmails } = useSettings();
   const { darkMode } = settings;
   const [credentials, setCredentials] = useState<LoginPayload>({
         email: "",
@@ -29,6 +29,7 @@ function LoginPage(): React.ReactElement {
 
             if (response.message === AUTH_MESSAGES.SUCCESS) {
                 setUser({ username: "", email: credentials.email, password: credentials.password });
+                await loadEmails();
                 navigate("/");
             } else {
                 setError(response.message || "Login was not successful");

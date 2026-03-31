@@ -3,7 +3,6 @@ import UIChatBubble from "../components/UIChatBubble";
 import UITypingIndicator from "../components/UITypingIndicator";
 import UIChatTextArea from "../components/UIChatTextArea";
 import { useSettings } from "../context/SettingsContext";
-import { fetchEmails } from "../api";
 
 // Message shape
 interface Message {
