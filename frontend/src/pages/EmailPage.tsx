@@ -23,14 +23,31 @@ const buildFolderTree = (folders: Folder[]): Folder[] => {
     // Build the tree structure
     folders.forEach(folder => {
         const folderNode = folderMap.get(folder.id)!;
-        const pathParts = folder.id.split('/');
+        // Handle different IMAP delimiter patterns: /, ., or no delimiter
+        let pathParts: string[];
+        
+        // Try different delimiters
+        if (folder.id.includes('/')) {
+            pathParts = folder.id.split('/');
+        } else if (folder.id.includes('.')) {
+            pathParts = folder.id.split('.');
+        } else {
+            // No clear delimiter, treat as single path part
+            pathParts = [folder.id];
+        }
         
         if (pathParts.length === 1) {
             // This is a root folder
             rootFolders.push(folderNode);
         } else {
-            // This is a subfolder
-            const parentPath = pathParts.slice(0, -1).join('/');
+            // This is a subfolder - try to find parent using the same delimiter
+            let parentPath: string;
+            if (folder.id.includes('/')) {
+                parentPath = pathParts.slice(0, -1).join('/');
+            } else {
+                parentPath = pathParts.slice(0, -1).join('.');
+            }
+            
             const parentFolder = folderMap.get(parentPath);
             
             if (parentFolder) {
@@ -43,6 +60,27 @@ const buildFolderTree = (folders: Folder[]): Folder[] => {
     });
     
     return rootFolders;
+};
+
+// Test function for folder hierarchy (can be called from browser console)
+export const testFolderHierarchy = () => {
+    const mockFolders: Folder[] = [
+        { id: 'INBOX', label: 'INBOX', emails: [] },
+        { id: 'Sent', label: 'Sent', emails: [] },
+        { id: 'Drafts', label: 'Drafts', emails: [] },
+        { id: 'INBOX/Work', label: 'Work', emails: [] },
+        { id: 'INBOX/Personal', label: 'Personal', emails: [] },
+        { id: 'INBOX/Work/Project1', label: 'Project1', emails: [] },
+        { id: 'INBOX/Work/Project2', label: 'Project2', emails: [] },
+        { id: 'Archive', label: 'Archive', emails: [] },
+        { id: 'Archive/2023', label: '2023', emails: [] },
+        { id: 'Archive/2024', label: '2024', emails: [] },
+    ];
+    
+    console.log("Testing folder hierarchy with mock data...");
+    const result = buildFolderTree(mockFolders);
+    console.log("Test result:", result);
+    return result;
 };
 
 // Recursive component to render folder tree
@@ -70,11 +108,17 @@ const FolderTreeItem: React.FC<{
     const isActive = folder.id === selectedFolderId;
     const isCollapsed = collapsedFolders.has(folder.id);
     const hasChildren = folder.children && folder.children.length > 0;
-    const indent = level * 16;
+    const isSubfolder = level > 0;
+    const indent = level * 20;
     
     return (
         <div className="mb-1">
             <div className="flex items-center gap-1" style={{ marginLeft: `${indent}px` }}>
+                {/* Subfolder indicator line */}
+                {isSubfolder && (
+                    <div className="absolute left-0 top-0 bottom-0 w-px bg-[rgba(124,58,237,0.2)]" style={{ marginLeft: `${-10}px` }} />
+                )}
+                
                 {/* Collapse toggle for folders with children */}
                 {showInlineEmails && hasChildren && (
                     <button
@@ -100,15 +144,34 @@ const FolderTreeItem: React.FC<{
                 <button
                     type="button"
                     onClick={() => onSelectFolder(folder.id)}
-                    className={`flex-1 flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isActive
-                        ? "bg-[rgba(124,58,237,0.18)] text-[#a78bfa]"
-                        : "text-gray-400 hover:bg-[rgba(124,58,237,0.08)] hover:text-gray-200"
+                    className={`flex-1 flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors relative ${isActive
+                        ? isSubfolder 
+                            ? "bg-[rgba(124,58,237,0.12)] text-[#c4b5fd] border-l-2 border-[#7c3aed]"
+                            : "bg-[rgba(124,58,237,0.18)] text-[#a78bfa]"
+                        : isSubfolder
+                            ? "text-gray-500 hover:bg-[rgba(124,58,237,0.06)] hover:text-gray-300 border-l-2 border-transparent"
+                            : "text-gray-400 hover:bg-[rgba(124,58,237,0.08)] hover:text-gray-200"
                         }`}
                 >
                     <span className="flex items-center gap-2">
+                        {/* Folder icon with different styles for subfolders */}
+                        <svg 
+                            xmlns="http://www.w3.org/2000/svg" 
+                            className={`w-4 h-4 ${isSubfolder ? "text-[rgba(124,58,237,0.6)]" : "text-[rgba(124,58,237,0.8)]"}`} 
+                            fill="none" 
+                            viewBox="0 0 24 24" 
+                            stroke="currentColor" 
+                            strokeWidth={1.5}
+                        >
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                        </svg>
                         {folder.label}
                         {folder.emails && folder.emails.length > 0 && (
-                            <span className="text-xs text-gray-500 bg-[rgba(124,58,237,0.1)] px-1.5 py-0.5 rounded-full">
+                            <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+                                isSubfolder 
+                                    ? "text-gray-600 bg-[rgba(124,58,237,0.08)]" 
+                                    : "text-gray-500 bg-[rgba(124,58,237,0.1)]"
+                            }`}>
                                 {folder.emails.length}
                             </span>
                         )}
@@ -118,7 +181,7 @@ const FolderTreeItem: React.FC<{
             
             {/* Inline email list */}
             {showInlineEmails && !isCollapsed && folder.emails && folder.emails.length > 0 && (
-                <div className="ml-6 mt-0.5 space-y-0.5" style={{ marginLeft: `${indent + 24}px` }}>
+                <div className="ml-6 mt-0.5 space-y-0.5" style={{ marginLeft: `${indent + 32}px` }}>
                     {folder.emails.map((email) => (
                         <button
                             key={email.id}
@@ -136,8 +199,8 @@ const FolderTreeItem: React.FC<{
                 </div>
             )}
             
-            {/* Render children */}
-            {!isCollapsed && folder.children && folder.children.map((child) => (
+            {/* Always render children (subfolders) */}
+            {folder.children && folder.children.map((child) => (
                 <FolderTreeItem
                     key={child.id}
                     folder={child}
@@ -171,7 +234,24 @@ function EmailPage() {
     const [collapsedFolders, setCollapsedFolders] = useState<Set<string>>(new Set());
 
     const folders = buildFolderTree(settings.emails);
-    const selectedFolder = folders.find((f) => f.id === selectedFolderId) || (folders.length > 0 ? folders[0] : null);
+    
+    // Helper function to find folder in hierarchical tree
+    const findFolderInTree = (folders: Folder[], folderId: string): Folder | null => {
+        for (const folder of folders) {
+            if (folder.id === folderId) {
+                return folder;
+            }
+            if (folder.children) {
+                const found = findFolderInTree(folder.children, folderId);
+                if (found) {
+                    return found;
+                }
+            }
+        }
+        return null;
+    };
+    
+    const selectedFolder = findFolderInTree(folders, selectedFolderId) || (folders.length > 0 ? folders[0] : null);
     const selectedEmail = selectedFolder?.emails.find((e) => e.id === selectedEmailId) || null;
     const showFolderPreview = settings.showFolderPreview;
 
@@ -202,6 +282,8 @@ function EmailPage() {
         // On success, transform API data to frontend format
         if (res.message === AUTH_MESSAGES.EMAILS_FETCHED && (res as any).emails) {
             const apiData = (res as any).emails;
+            console.log("API Data received:", apiData);
+            console.log("Folders from API:", apiData.folders);
             
     // Transform folders and emails from API to frontend format
             const transformedFolders: Folder[] = apiData.folders.map((folderName: string) => ({
@@ -222,6 +304,7 @@ function EmailPage() {
                     }))
             }));
             
+            console.log("Transformed folders:", transformedFolders);
             setEmails(transformedFolders);
         }
     };
@@ -332,23 +415,20 @@ function EmailPage() {
                     style={{ boxShadow: "4px 0 24px rgba(124,58,237,0.10)" }}
                 >
                     <nav className="flex-1 overflow-y-auto p-2">
-                        {(() => {
-                            const folderTree = buildFolderTree(folders);
-                            return folderTree.map((folder) => (
-                                <FolderTreeItem
-                                    key={folder.id}
-                                    folder={folder}
-                                    level={0}
-                                    selectedFolderId={selectedFolderId}
-                                    collapsedFolders={collapsedFolders}
-                                    onSelectFolder={handleSelectFolder}
-                                    onToggleCollapse={handleToggleCollapse}
-                                    showInlineEmails={!settings.showFolderPreview}
-                                    selectedEmailId={selectedEmailId}
-                                    onSelectEmail={handleSelectEmail}
-                                />
-                            ));
-                        })()}
+                        {folders.map((folder) => (
+                            <FolderTreeItem
+                                key={folder.id}
+                                folder={folder}
+                                level={0}
+                                selectedFolderId={selectedFolderId}
+                                collapsedFolders={collapsedFolders}
+                                onSelectFolder={handleSelectFolder}
+                                onToggleCollapse={handleToggleCollapse}
+                                showInlineEmails={!settings.showFolderPreview}
+                                selectedEmailId={selectedEmailId}
+                                onSelectEmail={handleSelectEmail}
+                            />
+                        ))}
                     </nav>
 
                     {/* Bottom bar — toggle preview mode and action buttons */}
