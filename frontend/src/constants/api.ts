@@ -15,6 +15,9 @@ export const API_CONFIG = {
     ADD_FOLDER: "/addfolder",
     GET_FOLDERS: "/getfolders",
     SEND_EMAIL: "/send-email",
+    ADD_NOTE: "/addnote",
+    ADD_LIST: "/addlist",
+    GET_LISTS: "/getlists",
   },
 } as const;
 

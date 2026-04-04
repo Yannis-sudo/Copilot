@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useCallback } from "react";
 import type { ReactNode } from "react";
-import type { Folder } from "../types/api";
-import { fetchEmails } from "../api";
+import type { Folder, ListInfo } from "../types/api";
+import { fetchEmails, getLists } from "../api";
 import { AUTH_MESSAGES } from "../constants";
 
 export interface UserSettings {
@@ -16,6 +16,9 @@ export interface AppSettings {
   showFolderPreview: boolean; // email list panel option
   emails: Folder[];
   emailsLoading: boolean;
+  lists: ListInfo[];
+  listsLoading: boolean;
+  listsError: string | null;
   [key: string]: unknown;
 }
 
@@ -28,6 +31,11 @@ interface SettingsContextType {
   setEmails: (emails: Folder[]) => void;
   setEmailsLoading: (loading: boolean) => void;
   loadEmails: () => Promise<void>;
+  setLists: (lists: ListInfo[]) => void;
+  setListsLoading: (loading: boolean) => void;
+  setListsError: (error: string | null) => void;
+  loadLists: () => Promise<void>;
+  refreshLists: () => Promise<void>;
 }
 
 const defaultSettings: AppSettings = {
@@ -40,6 +48,9 @@ const defaultSettings: AppSettings = {
   showFolderPreview: true,
   emails: [],
   emailsLoading: false,
+  lists: [],
+  listsLoading: false,
+  listsError: null,
 };
 
 const SettingsContext = createContext<SettingsContextType>({
@@ -51,6 +62,11 @@ const SettingsContext = createContext<SettingsContextType>({
   setEmails: () => {},
   setEmailsLoading: () => {},
   loadEmails: async () => {},
+  setLists: () => {},
+  setListsLoading: () => {},
+  setListsError: () => {},
+  loadLists: async () => {},
+  refreshLists: async () => {},
 });
 
 export const SettingsProvider = ({ children }: { children: ReactNode }) => {
@@ -75,6 +91,42 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   const setEmailsLoading = (loading: boolean) => {
     setSettings((prev) => ({ ...prev, emailsLoading: loading }));
   };
+
+  const setLists = (lists: ListInfo[]) => {
+    setSettings((prev) => ({ ...prev, lists }));
+  };
+
+  const setListsLoading = (loading: boolean) => {
+    setSettings((prev) => ({ ...prev, listsLoading: loading }));
+  };
+
+  const setListsError = (error: string | null) => {
+    setSettings((prev) => ({ ...prev, listsError: error }));
+  };
+
+  const loadLists = useCallback(async () => {
+    const email = settings.user.email;
+    const password = settings.user.password;
+    if (!email || !password) return;
+
+    setListsLoading(true);
+    setListsError(null);
+    try {
+      const res = await getLists({ email, password, page: 1, page_size: 50 });
+      if ((res as any).lists) {
+        setLists((res as any).lists);
+      }
+    } catch (error) {
+      console.error("Error loading lists:", error);
+      setListsError("Failed to load lists");
+    } finally {
+      setListsLoading(false);
+    }
+  }, [settings.user.email, settings.user.password]);
+
+  const refreshLists = useCallback(async () => {
+    await loadLists();
+  }, [loadLists]);
 
   const loadEmails = async () => {
     const email = settings.user.email;
@@ -114,7 +166,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <SettingsContext.Provider
-      value={{ settings, setSettings, setUser, toggleDarkMode, setShowFolderPreview, setEmails, setEmailsLoading, loadEmails }}
+      value={{ settings, setSettings, setUser, toggleDarkMode, setShowFolderPreview, setEmails, setEmailsLoading, loadEmails, setLists, setListsLoading, setListsError, loadLists, refreshLists }}
     >
       {children}
     </SettingsContext.Provider>

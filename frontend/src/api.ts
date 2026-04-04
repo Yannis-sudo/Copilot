@@ -6,7 +6,7 @@ import {
   API_CONFIG,
   ERROR_MESSAGES,
 } from "./constants";
-import type { ApiResponse, CreateAccountPayload, LoginPayload, AddEmailServerPayload, AddFolderPayload, SendEmailPayload } from "./types";
+import type { ApiResponse, CreateAccountPayload, LoginPayload, AddEmailServerPayload, AddFolderPayload, SendEmailPayload, AddNotePayload, AddListPayload, GetListsPayload, ListInfo } from "./types";
 
 /**
  * Make an API request with error handling
@@ -143,4 +143,34 @@ export async function sendEmail(payload: SendEmailPayload): Promise<ApiResponse>
       ? error
       : new Error(ERROR_MESSAGES.NETWORK_ERROR);
   }
+}
+
+/**
+ * Add a new note
+ */
+export async function addNote(payload: AddNotePayload): Promise<ApiResponse> {
+  return makeRequest<ApiResponse>(API_CONFIG.ENDPOINTS.ADD_NOTE, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+/**
+ * Add a new list
+ */
+export async function addList(payload: AddListPayload): Promise<ApiResponse> {
+  return makeRequest<ApiResponse>(API_CONFIG.ENDPOINTS.ADD_LIST, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+/**
+ * Get all lists for the user
+ */
+export async function getLists(payload: GetListsPayload): Promise<ApiResponse> {
+  return makeRequest<ApiResponse>(API_CONFIG.ENDPOINTS.GET_LISTS, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
 }
