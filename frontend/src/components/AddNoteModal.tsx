@@ -21,12 +21,13 @@ interface AddNoteModalProps {
     show: boolean;
     onClose: () => void;
     addNoteColumn: ColumnId;
-    newNote: { title: string; body: string; author: string; authorEmail: string; priority: Priority };
-    onNoteChange: (note: { title: string; body: string; author: string; authorEmail: string; priority: Priority }) => void;
+    newNote: { title: string; body: string; priority: Priority };
+    onNoteChange: (note: { title: string; body: string; priority: Priority }) => void;
+    onColumnChange: (column: ColumnId) => void;
     onSave: () => void;
 }
 
-function AddNoteModal({ show, onClose, addNoteColumn, newNote, onNoteChange, onSave }: AddNoteModalProps) {
+function AddNoteModal({ show, onClose, addNoteColumn, newNote, onNoteChange, onColumnChange, onSave }: AddNoteModalProps) {
     if (!show) return null;
 
     return (
@@ -40,6 +41,21 @@ function AddNoteModal({ show, onClose, addNoteColumn, newNote, onNoteChange, onS
                 </h2>
 
                 <div className="space-y-3">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-1">Column</label>
+                        <select
+                            value={addNoteColumn}
+                            onChange={(e) => onColumnChange(e.target.value as ColumnId)}
+                            className="w-full px-4 py-2 rounded-lg border border-[#7c3aed] bg-transparent text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#7c3aed] text-sm transition-all"
+                        >
+                            {COLUMNS.map((col) => (
+                                <option key={col.id} value={col.id}>
+                                    {col.label}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
                     <div>
                         <label className="block text-sm font-medium text-gray-300 mb-1">Title</label>
                         <input
@@ -59,28 +75,6 @@ function AddNoteModal({ show, onClose, addNoteColumn, newNote, onNoteChange, onS
                             onChange={(e) => onNoteChange({ ...newNote, body: e.target.value })}
                             placeholder="Optional description..."
                             className="w-full px-4 py-2 rounded-lg border border-[#7c3aed] bg-transparent text-gray-100 placeholder:text-[rgba(124,58,237,0.45)] focus:outline-none focus:ring-2 focus:ring-[#7c3aed] resize-none text-sm transition-all"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-1">Author</label>
-                        <input
-                            type="text"
-                            value={newNote.author}
-                            onChange={(e) => onNoteChange({ ...newNote, author: e.target.value })}
-                            placeholder="Your name"
-                            className="w-full px-4 py-2 rounded-lg border border-[#7c3aed] bg-transparent text-gray-100 placeholder:text-[rgba(124,58,237,0.45)] focus:outline-none focus:ring-2 focus:ring-[#7c3aed] text-sm transition-all"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-1">Author Email</label>
-                        <input
-                            type="email"
-                            value={newNote.authorEmail}
-                            onChange={(e) => onNoteChange({ ...newNote, authorEmail: e.target.value })}
-                            placeholder="your.email@example.com"
-                            className="w-full px-4 py-2 rounded-lg border border-[#7c3aed] bg-transparent text-gray-100 placeholder:text-[rgba(124,58,237,0.45)] focus:outline-none focus:ring-2 focus:ring-[#7c3aed] text-sm transition-all"
                         />
                     </div>
 

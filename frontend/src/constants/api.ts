@@ -18,6 +18,7 @@ export const API_CONFIG = {
     ADD_NOTE: "/addnote",
     ADD_LIST: "/addlist",
     GET_LISTS: "/getlists",
+    GET_NOTES: "/getnotes",
   },
 } as const;
 

@@ -1,12 +1,14 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import useTheme from "../hooks/useTheme";
 
 interface UILinkProps {
-    href: string;
+    href?: string;
     children: React.ReactNode;
     external?: boolean;
     className?: string;
     darkMode?: boolean;
+    onClick?: () => void;
     [key: string]: any;
 }
 
@@ -16,23 +18,49 @@ export default function UILink({
     external = false,
     className = "",
     darkMode = false,
+    onClick,
     ...props
 }: UILinkProps): React.ReactElement {
-    const baseStyles = `font-medium hover:underline transition-colors ${
-        darkMode ? "text-[#a78bfa]" : "text-[#7c3aed]"
-    }`;
+    const theme = useTheme();
+    const linkStyle = {
+        color: darkMode ? theme.colors.primaryLight : theme.colors.primary,
+    };
 
     if (external) {
         return (
-            <a href={href} className={`${baseStyles} ${className}`} {...props}>
+            <a
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`font-medium hover:underline transition-colors ${className}`}
+                style={linkStyle}
+                {...props}
+            >
                 {children}
             </a>
         );
     }
 
+    if (href) {
+        return (
+            <Link 
+                to={href} 
+                className={`font-medium hover:underline transition-colors ${className}`}
+                style={linkStyle}
+            >
+                {children}
+            </Link>
+        );
+    }
+
     return (
-        <Link to={href} className={`${baseStyles} ${className}`}>
+        <button
+            onClick={onClick}
+            className={`font-medium hover:underline transition-colors ${className}`}
+            style={linkStyle}
+            {...props}
+        >
             {children}
-        </Link>
+        </button>
     );
 }

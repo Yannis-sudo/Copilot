@@ -1,4 +1,5 @@
 import React from "react";
+import useTheme from "../hooks/useTheme";
 
 interface ModalProps {
     children: React.ReactNode;
@@ -7,13 +8,19 @@ interface ModalProps {
 
 // Reusable modal overlay — clicking the backdrop closes the modal
 function Modal({ children, onClose }: ModalProps) {
+    const theme = useTheme();
     return (
         <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.60)] backdrop-blur-sm"
             onClick={onClose}
         >
             <div
-                className="w-full max-w-lg mx-4 p-6 rounded-2xl border border-[rgba(124,58,237,0.25)] bg-[rgba(20,20,20,0.96)] shadow-[0_0_60px_rgba(124,58,237,0.20)]"
+                className="w-full max-w-lg mx-4 p-6 rounded-2xl border"
+                style={{
+                    borderColor: theme.colors.border,
+                    backgroundColor: "rgba(20,20,20,0.96)",
+                    boxShadow: `0 0 60px ${theme.colors.shadow}`
+                }}
                 onClick={(e) => e.stopPropagation()}
             >
                 {children}

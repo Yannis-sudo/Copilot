@@ -1,8 +1,9 @@
 import React from "react";
+import useTheme from "../hooks/useTheme";
 
 interface UIChatTextAreaProps {
     value: string;
-    onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+    onChange: (value: string) => void;
     onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
     onSend: () => void;
     disabled?: boolean;
@@ -19,27 +20,52 @@ export default function UIChatTextArea({
     placeholder = "Type a message...",
     darkMode = false,
 }: UIChatTextAreaProps): React.ReactElement {
+    const theme = useTheme();
+    
     return (
         <div className="px-4 md:px-20 lg:px-40 py-4 shrink-0">
 
-            {/* Textarea wrapper with purple brand border and transparent background */}
-            <div className="flex items-center gap-3 bg-[rgba(124,58,237,0.08)] border border-[#7c3aed] rounded-2xl px-4 py-2 focus-within:ring-2 focus-within:ring-[#7c3aed] focus-within:border-[#7c3aed] transition-all">
+            {/* Textarea wrapper with teal brand border and transparent background */}
+            <div 
+                className="flex items-center gap-3 rounded-2xl px-4 py-2 transition-all border focus-within:ring-2"
+                style={{
+                    backgroundColor: theme.colors.alpha08,
+                    borderColor: theme.colors.primary,
+                    outlineColor: theme.colors.primary,
+                }}
+            >
                 <textarea
                     rows={1}
                     value={value}
-                    onChange={onChange}
+                    onChange={(e) => onChange(e.target.value)}
                     onKeyDown={onKeyDown}
                     placeholder={placeholder}
                     disabled={disabled}
-                    className={`flex-1 bg-transparent resize-none text-sm focus:outline-none leading-relaxed self-center disabled:opacity-50 placeholder:text-[rgba(124,58,237,0.45)] ${darkMode ? "text-gray-100" : "text-gray-800"}`}
-                    style={{ maxHeight: "160px" }}
+                    className={`flex-1 bg-transparent resize-none text-sm focus:outline-none leading-relaxed self-center disabled:opacity-50 ${darkMode ? "text-gray-100" : "text-gray-800"}`}
+                    style={{ 
+                        maxHeight: "160px",
+                        color: theme.colors.textSecondary
+                    }}
                 />
 
                 {/* Send button */}
                 <button
                     onClick={onSend}
                     disabled={!value.trim() || disabled}
-                    className="w-9 h-9 rounded-xl bg-[#7c3aed] text-white flex items-center justify-center hover:bg-[#6d28d9] disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0"
+                    className="w-9 h-9 rounded-xl text-white flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0"
+                    style={{
+                        backgroundColor: theme.colors.primary,
+                    }}
+                    onMouseEnter={(e) => {
+                        if (!disabled) {
+                            (e.target as HTMLButtonElement).style.backgroundColor = theme.colors.primaryDarker;
+                        }
+                    }}
+                    onMouseLeave={(e) => {
+                        if (!disabled) {
+                            (e.target as HTMLButtonElement).style.backgroundColor = theme.colors.primary;
+                        }
+                    }}
                     aria-label="Send message"
                 >
                     <svg

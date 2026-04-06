@@ -9,6 +9,7 @@ import { fetchEmails, addFolder, getFolders, sendEmail } from "../api";
 import { AUTH_MESSAGES } from "../constants";
 import { useNavigate } from "react-router-dom";
 import type { Folder } from "../types/api";
+import useTheme from "../hooks/useTheme";
 
 // Helper function to build hierarchical folder structure
 const buildFolderTree = (folders: Folder[]): Folder[] => {
@@ -105,6 +106,7 @@ const FolderTreeItem: React.FC<{
     selectedEmailId,
     onSelectEmail
 }) => {
+    const theme = useTheme();
     const isActive = folder.id === selectedFolderId;
     const isCollapsed = collapsedFolders.has(folder.id);
     const hasChildren = folder.children && folder.children.length > 0;
@@ -116,7 +118,7 @@ const FolderTreeItem: React.FC<{
             <div className="flex items-center gap-1" style={{ marginLeft: `${indent}px` }}>
                 {/* Subfolder indicator line */}
                 {isSubfolder && (
-                    <div className="absolute left-0 top-0 bottom-0 w-px bg-[rgba(124,58,237,0.2)]" style={{ marginLeft: `${-10}px` }} />
+                    <div className="absolute left-0 top-0 bottom-0 w-px" style={{ marginLeft: `${-10}px`, backgroundColor: theme.colors.alpha25 }} />
                 )}
                 
                 {/* Collapse toggle for folders with children */}
@@ -124,7 +126,10 @@ const FolderTreeItem: React.FC<{
                     <button
                         type="button"
                         onClick={() => onToggleCollapse(folder.id)}
-                        className="text-[rgba(124,58,237,0.50)] hover:text-[#7c3aed] transition-colors w-5 h-5 flex items-center justify-center shrink-0"
+                        className="transition-colors w-5 h-5 flex items-center justify-center shrink-0"
+                        style={{ color: theme.colors.alpha25 }}
+                        onMouseEnter={(e) => (e.target as HTMLButtonElement).style.color = theme.colors.primary}
+                        onMouseLeave={(e) => (e.target as HTMLButtonElement).style.color = theme.colors.alpha25}
                         title={isCollapsed ? "Expand" : "Collapse"}
                     >
                         <svg
@@ -144,34 +149,53 @@ const FolderTreeItem: React.FC<{
                 <button
                     type="button"
                     onClick={() => onSelectFolder(folder.id)}
-                    className={`flex-1 flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors relative ${isActive
-                        ? isSubfolder 
-                            ? "bg-[rgba(124,58,237,0.12)] text-[#c4b5fd] border-l-2 border-[#7c3aed]"
-                            : "bg-[rgba(124,58,237,0.18)] text-[#a78bfa]"
-                        : isSubfolder
-                            ? "text-gray-500 hover:bg-[rgba(124,58,237,0.06)] hover:text-gray-300 border-l-2 border-transparent"
-                            : "text-gray-400 hover:bg-[rgba(124,58,237,0.08)] hover:text-gray-200"
-                        }`}
+                    className="flex-1 flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors relative border-l-2"
+                    style={{
+                        backgroundColor: isActive 
+                            ? (isSubfolder ? theme.colors.alpha12 : theme.colors.alpha18)
+                            : "transparent",
+                        color: isActive 
+                            ? theme.colors.primaryLight 
+                            : (isSubfolder ? "#6b7280" : "#9ca3af"),
+                        borderColor: isActive 
+                            ? theme.colors.primary 
+                            : "transparent"
+                    }}
+                    onMouseEnter={(e) => {
+                        if (!isActive) {
+                            (e.target as HTMLButtonElement).style.backgroundColor = isSubfolder ? theme.colors.alpha08 : theme.colors.alpha12;
+                            (e.target as HTMLButtonElement).style.color = "#d1d5db";
+                        }
+                    }}
+                    onMouseLeave={(e) => {
+                        if (!isActive) {
+                            (e.target as HTMLButtonElement).style.backgroundColor = "transparent";
+                            (e.target as HTMLButtonElement).style.color = isSubfolder ? "#6b7280" : "#9ca3af";
+                        }
+                    }}
                 >
                     <span className="flex items-center gap-2">
                         {/* Folder icon with different styles for subfolders */}
                         <svg 
                             xmlns="http://www.w3.org/2000/svg" 
-                            className={`w-4 h-4 ${isSubfolder ? "text-[rgba(124,58,237,0.6)]" : "text-[rgba(124,58,237,0.8)]"}`} 
+                            className="w-4 h-4" 
                             fill="none" 
                             viewBox="0 0 24 24" 
                             stroke="currentColor" 
                             strokeWidth={1.5}
+                            style={{ color: isSubfolder ? theme.colors.alpha25 : theme.colors.alpha18 }}
                         >
                             <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                         </svg>
                         {folder.label}
                         {folder.emails && folder.emails.length > 0 && (
-                            <span className={`text-xs px-1.5 py-0.5 rounded-full ${
-                                isSubfolder 
-                                    ? "text-gray-600 bg-[rgba(124,58,237,0.08)]" 
-                                    : "text-gray-500 bg-[rgba(124,58,237,0.1)]"
-                            }`}>
+                            <span 
+                                className="text-xs px-1.5 py-0.5 rounded-full"
+                                style={{
+                                    backgroundColor: isSubfolder ? theme.colors.alpha08 : theme.colors.alpha12,
+                                    color: isSubfolder ? "#4b5563" : "#6b7280"
+                                }}
+                            >
                                 {folder.emails.length}
                             </span>
                         )}
@@ -187,10 +211,23 @@ const FolderTreeItem: React.FC<{
                             key={email.id}
                             type="button"
                             onClick={() => onSelectEmail(email.id)}
-                            className={`w-full text-left px-2 py-1.5 rounded-md text-xs transition-colors ${selectedEmailId === email.id
-                                ? "bg-[rgba(124,58,237,0.18)] text-[#a78bfa]"
-                                : "text-gray-500 hover:bg-[rgba(124,58,237,0.08)] hover:text-gray-300"
-                                }`}
+                            className="w-full text-left px-2 py-1.5 rounded-md text-xs transition-colors"
+                            style={{
+                                backgroundColor: selectedEmailId === email.id ? theme.colors.alpha18 : "transparent",
+                                color: selectedEmailId === email.id ? theme.colors.primaryLight : "#6b7280"
+                            }}
+                            onMouseEnter={(e) => {
+                                if (selectedEmailId !== email.id) {
+                                    (e.target as HTMLButtonElement).style.backgroundColor = theme.colors.alpha08;
+                                    (e.target as HTMLButtonElement).style.color = "#d1d5db";
+                                }
+                            }}
+                            onMouseLeave={(e) => {
+                                if (selectedEmailId !== email.id) {
+                                    (e.target as HTMLButtonElement).style.backgroundColor = "transparent";
+                                    (e.target as HTMLButtonElement).style.color = "#6b7280";
+                                }
+                            }}
                         >
                             <div className="truncate">{email.subject}</div>
                             <div className="text-gray-600 truncate text-xs">{email.from}</div>
@@ -220,6 +257,7 @@ const FolderTreeItem: React.FC<{
 
 function EmailPage() {
     const navigate = useNavigate();
+    const theme = useTheme();
 
     const { settings, setShowFolderPreview, setEmails, loadEmails } = useSettings();
     const { darkMode } = settings;
@@ -411,8 +449,11 @@ function EmailPage() {
 
                 {/* Left sidebar */}
                 <aside
-                    className="relative z-10 w-72 bg-[#1a1a1a] flex flex-col shrink-0 border-r border-[rgba(124,58,237,0)]"
-                    style={{ boxShadow: "4px 0 24px rgba(124,58,237,0.10)" }}
+                    className="relative z-10 w-72 bg-[#1a1a1a] flex flex-col shrink-0 border-r"
+                    style={{ 
+                        boxShadow: `4px 0 24px ${theme.colors.shadow}`,
+                        borderColor: theme.colors.border
+                    }}
                 >
                     <nav className="flex-1 overflow-y-auto p-2">
                         {folders.map((folder) => (
@@ -432,7 +473,7 @@ function EmailPage() {
                     </nav>
 
                     {/* Bottom bar — toggle preview mode and action buttons */}
-                    <div className="p-3 border-t border-[rgba(124,58,237,0)] flex justify-between items-center gap-2">
+                    <div className="p-3 border-t flex justify-between items-center gap-2" style={{ borderColor: theme.colors.border }}>
                         <UIButton
                             type="button"
                             onClick={() => setShowFolderPreview(!showFolderPreview)}
@@ -443,9 +484,8 @@ function EmailPage() {
                         <div className="flex gap-2">
                             <UIIconButton
                                 onClick={loadEmails}
-                                title="Reload emails"
                                 variant="dark"
-                                className="w-10 h-10 text-[#a78bfa]"
+                                className="w-10 h-10"
                                 icon={
                                     settings.emailsLoading ? (
                                         <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
@@ -461,9 +501,8 @@ function EmailPage() {
                             />
                             <UIIconButton
                                 onClick={handleCompose}
-                                title="New Email"
                                 variant="dark"
-                                className="w-10 h-10 text-[#a78bfa]"
+                                className="w-10 h-10"
                                 icon={
                                     <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -472,9 +511,8 @@ function EmailPage() {
                             />
                             <UIIconButton
                                 onClick={handleAddFolder}
-                                title="Add folder"
                                 variant="dark"
-                                className="w-10 h-10 text-[#a78bfa]"
+                                className="w-10 h-10"
                                 icon={
                                     <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -499,13 +537,13 @@ function EmailPage() {
 
                     {/* Email list panel — only shown when settings.showFolderPreview is true */}
                     {settings.showFolderPreview && selectedFolder && (
-                        <div className="w-80 border-r border-[rgba(124,58,237,0.25)] bg-[#1a1a1a] flex flex-col shrink-0">
-                            <div className="px-4 py-3 border-b border-[rgba(124,58,237,0.25)]">
+                        <div className="w-80 border-r bg-[#1a1a1a] flex flex-col shrink-0" style={{ borderColor: theme.colors.border }}>
+                            <div className="px-4 py-3 border-b" style={{ borderColor: theme.colors.border }}>
                                 <h2 className="text-sm font-semibold text-gray-200">{selectedFolder.label}</h2>
                                 <p className="text-xs text-gray-500">{selectedFolder.emails.length} messages</p>
                             </div>
 
-                            <div className="flex-1 overflow-y-auto divide-y divide-[rgba(124,58,237,0.12)]">
+                            <div className="flex-1 overflow-y-auto divide-y" style={{ borderColor: theme.colors.alpha12 }}>
                                 {selectedFolder.emails.length === 0 ? (
                                     <p className="text-sm text-gray-500 p-4">No emails in this folder.</p>
                                 ) : (
@@ -514,10 +552,21 @@ function EmailPage() {
                                             key={email.id}
                                             type="button"
                                             onClick={() => handleSelectEmail(email.id)}
-                                            className={`w-full text-left px-4 py-3 transition-colors ${selectedEmailId === email.id
-                                                ? "bg-[rgba(124,58,237,0.18)] border-l-2 border-[#7c3aed]"
-                                                : "hover:bg-[rgba(124,58,237,0.08)]"
-                                                }`}
+                                            className="w-full text-left px-4 py-3 transition-colors border-l-2"
+                                            style={{
+                                                backgroundColor: selectedEmailId === email.id ? theme.colors.alpha18 : "transparent",
+                                                borderColor: selectedEmailId === email.id ? theme.colors.primary : "transparent"
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                if (selectedEmailId !== email.id) {
+                                                    (e.target as HTMLButtonElement).style.backgroundColor = theme.colors.alpha08;
+                                                }
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                if (selectedEmailId !== email.id) {
+                                                    (e.target as HTMLButtonElement).style.backgroundColor = "transparent";
+                                                }
+                                            }}
                                         >
                                             <div className="flex justify-between items-center mb-0.5">
                                                 <span className={`text-sm truncate font-medium text-gray-300`}>

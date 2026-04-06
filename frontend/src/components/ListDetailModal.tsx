@@ -1,6 +1,7 @@
 import UIButton from "./UIButton";
 import Modal from "./Modal";
 import type { ListInfo } from "../types/api";
+import useTheme from "../hooks/useTheme";
 
 interface ListDetailModalProps {
     show: boolean;
@@ -9,6 +10,7 @@ interface ListDetailModalProps {
 }
 
 function ListDetailModal({ show, onClose, list }: ListDetailModalProps) {
+    const theme = useTheme();
     if (!show || !list) return null;
 
     const formatDate = (dateString?: string) => {
@@ -21,20 +23,26 @@ function ListDetailModal({ show, onClose, list }: ListDetailModalProps) {
             <div className="space-y-4">
                 <div className="flex items-start justify-between gap-4">
                     <h2 className="text-xl font-bold text-gray-100 leading-snug">{list.list_name}</h2>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-[rgba(124,58,237,0.20)] text-[#c4b5fd]">
+                    <span 
+                        className="text-xs px-2 py-0.5 rounded-full"
+                        style={{
+                            backgroundColor: theme.colors.alpha18,
+                            color: theme.colors.primaryLight
+                        }}
+                    >
                         List Details
                     </span>
                 </div>
 
                 <div className="space-y-3">
                     <div>
-                        <h3 className="text-sm font-semibold text-[#a78bfa] mb-1">Description</h3>
+                        <h3 className="text-sm font-semibold mb-1" style={{ color: theme.colors.primaryLight }}>Description</h3>
                         <p className="text-sm text-gray-300 leading-relaxed">
                             {list.description || "No description provided."}
                         </p>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-4 pt-1 text-xs text-gray-500 border-t border-[rgba(124,58,237,0.15)]">
+                    <div className="flex flex-wrap items-center gap-4 pt-1 text-xs text-gray-500 border-t" style={{ borderColor: theme.colors.alpha12 }}>
                         <div>
                             <span className="text-gray-400">List ID: </span>
                             <span className="text-gray-300 font-mono text-xs">{list.list_id}</span>

@@ -1,7 +1,8 @@
+import React, { useState, useRef } from "react";
 import UIButton from "../UIButton";
+import useTheme from "../../hooks/useTheme";
 import UIIconButton from "../UIIconButton";
 import UITextInput from "../UITextInput";
-import { useState, useRef } from "react";
 
 interface UIEmailComposeProps {
     to: string;
@@ -16,7 +17,8 @@ interface UIEmailComposeProps {
 }
 
 export default function UIEmailCompose(props: UIEmailComposeProps) {
-    const borderColor = "border-[rgba(255,255,255,0.06)]";
+    const theme = useTheme();
+    const borderColor = `border-[${theme.colors.border}]`;
     const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -103,7 +105,11 @@ export default function UIEmailCompose(props: UIEmailComposeProps) {
                         placeholder="Write your message here..."
                         value={props.body}
                         onChange={(e) => props.onBodyChange(e.target.value)}
-                        className="w-full px-4 py-3 rounded-lg border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.02)] text-gray-100 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#7c3aed] focus:border-transparent resize-none transition-all text-sm leading-relaxed"
+                        className="w-full px-4 py-3 rounded-lg border bg-[rgba(255,255,255,0.02)] text-gray-100 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:border-transparent resize-none transition-all text-sm leading-relaxed"
+                        style={{
+                            borderColor: "rgba(255,255,255,0.1)",
+                            outlineColor: theme.colors.primary
+                        }}
                     />
                 </div>
                 
@@ -154,7 +160,6 @@ export default function UIEmailCompose(props: UIEmailComposeProps) {
                 <div className="flex items-center gap-1">
                     <UIIconButton
                         onClick={handleAttachFile}
-                        title="Attach file"
                         darkMode={props.darkMode}
                         icon={
                             <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -164,7 +169,6 @@ export default function UIEmailCompose(props: UIEmailComposeProps) {
                     />
                     <UIIconButton
                         onClick={handleSaveDraft}
-                        title="Save draft"
                         darkMode={props.darkMode}
                         icon={
                             <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

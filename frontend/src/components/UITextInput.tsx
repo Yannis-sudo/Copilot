@@ -1,4 +1,5 @@
 import React from "react";
+import useTheme from "../hooks/useTheme";
 
 interface UITextInputProps
     extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -15,7 +16,21 @@ export default function UITextInput({
     darkMode = false,
     ...props
 }: UITextInputProps): React.ReactElement {
+    const theme = useTheme();
     const uniqueId = id || `input-${Math.random()}`;
+
+    const getInputStyle = (): React.CSSProperties => ({
+        backgroundColor: theme.colors.alpha08,
+        borderColor: error ? "#ef4444" : theme.colors.primary,
+        color: darkMode ? "white" : "#1f2937",
+    });
+
+    const getFocusStyle = (): React.CSSProperties => ({
+        outline: "none",
+        borderColor: theme.colors.primary,
+        boxShadow: `0 0 0 2px ${theme.colors.primary}`,
+        backgroundColor: theme.colors.alpha18,
+    });
 
     return (
         <div className="w-full">
@@ -30,21 +45,14 @@ export default function UITextInput({
 
             <input
                 id={uniqueId}
-                className={`
-                    w-full px-4 py-2 rounded-lg
-                    bg-[rgba(124,58,237,0)]
-                    border border-[#7c3aed]
-                    text-sm
-                    transition-all duration-200
-                    placeholder:text-[rgba(124,58,237,0.45)]
-                    focus:outline-none
-                    focus:ring-2 focus:ring-[#7c3aed]
-                    focus:ring-offset-0
-                    focus:bg-[rgba(124,58,237,0.15)]
-                    ${darkMode ? "text-white" : "text-gray-800"}
-                    ${error ? "border-red-500 focus:ring-red-400 bg-[rgba(220,38,38,0.07)]" : ""}
-                    ${className}
-                `}
+                className={`w-full px-4 py-2 rounded-lg border text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 ${error ? "border-red-500" : ""} ${className}`}
+                style={getInputStyle()}
+                onFocus={(e) => {
+                    Object.assign((e.target as HTMLInputElement).style, getFocusStyle());
+                }}
+                onBlur={(e) => {
+                    Object.assign((e.target as HTMLInputElement).style, getInputStyle());
+                }}
                 {...props}
             />
 

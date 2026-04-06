@@ -8,6 +8,7 @@ import UIButton from "../components/UIButton";
 import UIErrorMessage from "../components/UIErrorMessage";
 import UILink from "../components/UILink";
 import { useSettings } from "../context/SettingsContext";
+import useTheme from "../hooks/useTheme";
 
 interface CreateAccountFormState extends CreateAccountPayload {
     passwordConfirm: string;
@@ -16,6 +17,7 @@ interface CreateAccountFormState extends CreateAccountPayload {
 function CreateAccountPage(): React.ReactElement {
   const { settings } = useSettings();
   const { darkMode } = settings;
+  const theme = useTheme();
     const navigate = useNavigate();
     const [formData, setFormData] = useState<CreateAccountFormState>({
         email: "",
@@ -67,10 +69,17 @@ function CreateAccountPage(): React.ReactElement {
         <React.Fragment>
             <div className={`min-h-screen flex items-center justify-center overflow-hidden ${darkMode ? "bg-dark" : "bg-gray-100"}`}>
 
-                {/* Card matches the LoginPage purple glassmorphism style */}
-                <div className="w-full max-w-md p-8 rounded-2xl border border-[rgba(124,58,237,0.25)] bg-[rgba(124,58,237,0.08)] backdrop-blur-sm">
+                {/* Card matches the LoginPage teal glassmorphism style */}
+                <div 
+                    className="w-full max-w-md p-8 rounded-2xl backdrop-blur-sm"
+                    style={{
+                        border: `1px solid ${theme.colors.border}`,
+                        backgroundColor: theme.colors.alpha08,
+                        boxShadow: `4px 0 24px ${theme.colors.shadow}`
+                    }}
+                >
 
-                    <h2 className={`text-2xl font-bold text-center mb-6 ${darkMode ? "text-white" : "text-gray-800"}`}>
+                    <h2 className={`text-2xl font-bold text-center mb-6`} style={{ color: theme.colors.textPrimary }}>
                         Create Account
                     </h2>
 

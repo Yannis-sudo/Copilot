@@ -6,7 +6,7 @@ import {
   API_CONFIG,
   ERROR_MESSAGES,
 } from "./constants";
-import type { ApiResponse, CreateAccountPayload, LoginPayload, AddEmailServerPayload, AddFolderPayload, SendEmailPayload, AddNotePayload, AddListPayload, GetListsPayload, ListInfo } from "./types";
+import type { ApiResponse, CreateAccountPayload, LoginPayload, AddEmailServerPayload, AddFolderPayload, SendEmailPayload, AddNotePayload, AddListPayload, GetListsPayload, GetNotesPayload } from "./types";
 
 /**
  * Make an API request with error handling
@@ -55,8 +55,8 @@ export async function createAccount(
 /**
  * Authenticate user with email and password
  */
-export async function login(payload: LoginPayload): Promise<ApiResponse> {
-  return makeRequest<ApiResponse>(API_CONFIG.ENDPOINTS.LOGIN, {
+export async function login(payload: LoginPayload): Promise<ApiResponse & { username?: string; email?: string }> {
+  return makeRequest<ApiResponse & { username?: string; email?: string }>(API_CONFIG.ENDPOINTS.LOGIN, {
     method: "POST",
     body: JSON.stringify(payload),
   });
@@ -170,6 +170,16 @@ export async function addList(payload: AddListPayload): Promise<ApiResponse> {
  */
 export async function getLists(payload: GetListsPayload): Promise<ApiResponse> {
   return makeRequest<ApiResponse>(API_CONFIG.ENDPOINTS.GET_LISTS, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+/**
+ * Get notes from a specific list
+ */
+export async function getNotes(payload: GetNotesPayload): Promise<ApiResponse> {
+  return makeRequest<ApiResponse>(API_CONFIG.ENDPOINTS.GET_NOTES, {
     method: "POST",
     body: JSON.stringify(payload),
   });

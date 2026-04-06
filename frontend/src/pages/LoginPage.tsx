@@ -9,11 +9,13 @@ import UIButton from "../components/UIButton";
 import UIErrorMessage from "../components/UIErrorMessage";
 import UILink from "../components/UILink";
 import { useSettings } from "../context/SettingsContext";
+import useTheme from "../hooks/useTheme";
 
 function LoginPage(): React.ReactElement {
   const navigate = useNavigate();
   const { settings, setUser, loadEmails } = useSettings();
   const { darkMode } = settings;
+  const theme = useTheme();
   const [credentials, setCredentials] = useState<LoginPayload>({
         email: "",
         password: "",
@@ -28,7 +30,11 @@ function LoginPage(): React.ReactElement {
             const response = await login(credentials);
 
             if (response.message === AUTH_MESSAGES.SUCCESS) {
-                setUser({ username: "", email: credentials.email, password: credentials.password });
+                setUser({ 
+                    username: response.username || "", 
+                    email: credentials.email, 
+                    password: credentials.password 
+                });
                 await loadEmails();
                 navigate("/");
             } else {
@@ -55,10 +61,17 @@ function LoginPage(): React.ReactElement {
         <React.Fragment>
             <div className={`min-h-screen flex items-center justify-center overflow-hidden ${darkMode ? "bg-dark" : "bg-gray-100"}`}>
 
-                {/* Card with semi-transparent purple background and purple glow shadow */}
-                <div className="w-full max-w-md p-8 rounded-2xl border border-[rgba(124,58,237,0.25)] bg-[rgba(124,58,237,0.08)] backdrop-blur-sm">
+                {/* Card with semi-transparent teal background and teal glow shadow */}
+                <div 
+                    className="w-full max-w-md p-8 rounded-2xl backdrop-blur-sm"
+                    style={{
+                        border: `1px solid ${theme.colors.border}`,
+                        backgroundColor: theme.colors.alpha08,
+                        boxShadow: `4px 0 24px ${theme.colors.shadow}`
+                    }}
+                >
 
-                    <h2 className={`text-2xl font-bold text-center mb-6 ${darkMode ? "text-white" : "text-gray-800"}`}>
+                    <h2 className={`text-2xl font-bold text-center mb-6`} style={{ color: theme.colors.textPrimary }}>
                         Login
                     </h2>
 

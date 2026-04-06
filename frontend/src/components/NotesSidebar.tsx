@@ -1,5 +1,6 @@
 import UIIconButton from "./UIIconButton";
-import type { ListInfo } from "../types/api";
+import type { ListInfo, NoteInfo } from "../types/api";
+import useTheme from "../hooks/useTheme";
 
 type Priority = "low" | "medium" | "high";
 
@@ -9,49 +10,39 @@ const PRIORITY_STYLES: Record<Priority, string> = {
     high: "text-red-400 bg-[rgba(248,113,113,0.10)] border-[rgba(248,113,113,0.25)]",
 };
 
-interface Note {
-    id: string;
-    title: string;
-    body: string;
-    author: string;
-    priority: Priority;
-    column: string;
-    listId: string;
-    createdAt: string;
-}
-
-interface NoteList {
-    id: string;
-    label: string;
-}
-
 interface NotesSidebarProps {
     lists: ListInfo[];
-    notes: Note[];
+    notes: NoteInfo[];
     activeListId: string;
-    visibleNotes: Note[];
+    visibleNotes: NoteInfo[];
     onAddList: () => void;
     onSelectList: (listId: string) => void;
-    onListDetail: (list: ListInfo) => void;
+    onListDetail?: (list: ListInfo) => void;
     listsLoading: boolean;
     listsError: string | null;
     onRefreshLists: () => void;
 }
 
 function NotesSidebar({ lists, notes, activeListId, visibleNotes, onAddList, onSelectList, onListDetail, listsLoading, listsError, onRefreshLists }: NotesSidebarProps) {
+    const theme = useTheme();
     return (
         <aside
-            className="relative z-10 w-60 bg-[#1a1a1a] flex flex-col shrink-0 border-r border-[rgba(124,58,237,0)]"
-            style={{ boxShadow: "4px 0 24px rgba(124,58,237,0.10)" }}
+            className="relative z-10 w-60 bg-[#1a1a1a] flex flex-col shrink-0 border-r"
+            style={{ 
+                boxShadow: `4px 0 24px ${theme.colors.shadow}`,
+                borderColor: theme.colors.border
+            }}
         >
             <div className="px-4 pt-5 pb-3 flex items-center justify-between">
-                <span className="text-xs font-semibold text-[#a78bfa] uppercase tracking-widest">
+                <span 
+                    className="text-xs font-semibold uppercase tracking-widest"
+                    style={{ color: theme.colors.primaryLight }}
+                >
                     Lists
                 </span>
                 <div className="flex items-center gap-2">
                     <UIIconButton
                         onClick={onRefreshLists}
-                        title="Refresh lists"
                         variant="default"
                         icon={
                             <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -61,7 +52,6 @@ function NotesSidebar({ lists, notes, activeListId, visibleNotes, onAddList, onS
                     />
                     <UIIconButton
                         onClick={onAddList}
-                        title="Add list"
                         variant="default"
                         icon={
                             <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -75,7 +65,10 @@ function NotesSidebar({ lists, notes, activeListId, visibleNotes, onAddList, onS
             <nav className="flex-1 overflow-y-auto px-2 pb-4 space-y-0.5">
                 {listsLoading ? (
                     <div className="flex flex-col items-center justify-center py-8">
-                        <div className="w-6 h-6 border-2 border-[#a78bfa] border-t-transparent rounded-full animate-spin mb-2"></div>
+                        <div 
+                            className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin mb-2"
+                            style={{ borderColor: theme.colors.primaryLight }}
+                        ></div>
                         <p className="text-xs text-gray-500">Loading lists...</p>
                     </div>
                 ) : listsError ? (
@@ -83,7 +76,14 @@ function NotesSidebar({ lists, notes, activeListId, visibleNotes, onAddList, onS
                         <p className="text-xs text-red-400 mb-2">{listsError}</p>
                         <button
                             onClick={onRefreshLists}
-                            className="text-xs text-[#a78bfa] hover:text-white transition-colors"
+                            className="text-xs transition-colors"
+                            style={{ color: theme.colors.primaryLight }}
+                            onMouseEnter={(e) => {
+                                (e.target as HTMLButtonElement).style.color = "white";
+                            }}
+                            onMouseLeave={(e) => {
+                                (e.target as HTMLButtonElement).style.color = theme.colors.primaryLight;
+                            }}
                         >
                             Try again
                         </button>
@@ -93,7 +93,14 @@ function NotesSidebar({ lists, notes, activeListId, visibleNotes, onAddList, onS
                         <p className="text-xs text-gray-500 mb-2">No lists found</p>
                         <button
                             onClick={onAddList}
-                            className="text-xs text-[#a78bfa] hover:text-white transition-colors"
+                            className="text-xs transition-colors"
+                            style={{ color: theme.colors.primaryLight }}
+                            onMouseEnter={(e) => {
+                                (e.target as HTMLButtonElement).style.color = "white";
+                            }}
+                            onMouseLeave={(e) => {
+                                (e.target as HTMLButtonElement).style.color = theme.colors.primaryLight;
+                            }}
                         >
                             Create your first list
                         </button>
@@ -101,36 +108,81 @@ function NotesSidebar({ lists, notes, activeListId, visibleNotes, onAddList, onS
                 ) : (
                     lists.map((list) => {
                         const isActive = list.list_id === activeListId;
-                        const count = notes.filter((n) => n.listId === list.list_id).length;
+                        const count = notes.filter((n) => n.list_id === list.list_id).length;
                         return (
                             <div
                                 key={list.list_id}
-                                className={`group relative rounded-lg transition-all ${
-                                    isActive
-                                        ? "bg-[rgba(124,58,237,0.18)]"
-                                        : "hover:bg-[rgba(124,58,237,0.12)]"
-                                }`}
+                                className="group relative rounded-lg transition-all"
+                                style={{
+                                    backgroundColor: isActive ? theme.colors.alpha18 : "transparent"
+                                }}
+                                onMouseEnter={(e) => {
+                                    if (!isActive) {
+                                        (e.target as HTMLElement).style.backgroundColor = theme.colors.alpha12;
+                                    }
+                                }}
+                                onMouseLeave={(e) => {
+                                    if (!isActive) {
+                                        (e.target as HTMLElement).style.backgroundColor = "transparent";
+                                    }
+                                }}
                             >
                                 <button
                                     type="button"
                                     onClick={() => onSelectList(list.list_id)}
-                                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                        isActive
-                                            ? "text-[#a78bfa]"
-                                            : "text-gray-400 group-hover:text-gray-200"
-                                    }`}
+                                    className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+                                    style={{
+                                        color: isActive ? theme.colors.primaryLight : "#9ca3af"
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        if (!isActive) {
+                                            (e.target as HTMLButtonElement).style.color = "#e5e7eb";
+                                        }
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        if (!isActive) {
+                                            (e.target as HTMLButtonElement).style.color = "#9ca3af";
+                                        }
+                                    }}
                                 >
                                     <span>{list.list_name}</span>
-                                    <span className={`text-xs px-1.5 py-0.5 rounded-full transition-colors ${
-                                        isActive ? "bg-[rgba(124,58,237,0.30)] text-[#c4b5fd]" : "bg-[rgba(255,255,255,0.06)] text-gray-500 group-hover:bg-[rgba(255,255,255,0.10)] group-hover:text-gray-300"
-                                    }`}>
+                                    <span 
+                                        className="text-xs px-1.5 py-0.5 rounded-full transition-colors"
+                                        style={{
+                                            backgroundColor: isActive ? theme.colors.alpha25 : "rgba(255,255,255,0.06)",
+                                            color: isActive ? theme.colors.primaryLight : "#6b7280"
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            if (!isActive) {
+                                                (e.target as HTMLElement).style.backgroundColor = "rgba(255,255,255,0.10)";
+                                                (e.target as HTMLElement).style.color = "#d1d5db";
+                                            }
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            if (!isActive) {
+                                                (e.target as HTMLElement).style.backgroundColor = "rgba(255,255,255,0.06)";
+                                                (e.target as HTMLElement).style.color = "#6b7280";
+                                            }
+                                        }}
+                                    >
                                         {count}
                                     </span>
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={() => onListDetail(list)}
-                                    className="opacity-0 group-hover:opacity-100 transition-all duration-200 absolute right-1 top-1.5 text-xs text-[#a78bfa] hover:text-white transition-colors px-1.5 py-1 rounded-md hover:bg-[rgba(124,58,237,0.30)] shadow-sm"
+                                    onClick={() => onListDetail?.(list)}
+                                    className="opacity-0 group-hover:opacity-100 transition-all duration-200 absolute right-1 top-1.5 text-xs px-1.5 py-1 rounded-md shadow-sm"
+                                    style={{
+                                        color: theme.colors.primaryLight
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        (e.target as HTMLButtonElement).style.color = "white";
+                                        (e.target as HTMLButtonElement).style.backgroundColor = theme.colors.alpha25;
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        (e.target as HTMLButtonElement).style.color = theme.colors.primaryLight;
+                                        (e.target as HTMLButtonElement).style.backgroundColor = "transparent";
+                                    }}
                                     title="View details"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

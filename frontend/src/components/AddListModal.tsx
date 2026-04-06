@@ -1,5 +1,6 @@
 import UIButton from "./UIButton";
 import Modal from "./Modal";
+import useTheme from "../hooks/useTheme";
 
 interface AddListModalProps {
     show: boolean;
@@ -23,6 +24,7 @@ function AddListModal({
     onDescriptionChange, 
     onSave 
 }: AddListModalProps) {
+    const theme = useTheme();
     if (!show) return null;
 
     const isNameValid = newListName.trim().length > 0 && newListName.trim().length <= MAX_NAME_LENGTH;
@@ -49,11 +51,15 @@ function AddListModal({
                             value={newListName}
                             onChange={(e) => onListNameChange(e.target.value.slice(0, MAX_NAME_LENGTH))}
                             placeholder="Enter list name..."
-                            className={`w-full px-4 py-2 rounded-lg border bg-transparent text-gray-100 placeholder:text-[rgba(124,58,237,0.45)] focus:outline-none focus:ring-2 text-sm transition-all ${
+                            className={`w-full px-4 py-2 rounded-lg border bg-transparent text-gray-100 focus:outline-none focus:ring-2 text-sm transition-all ${
                                 newListName.trim().length > MAX_NAME_LENGTH
                                     ? "border-red-500 focus:ring-red-500"
-                                    : "border-[#7c3aed] focus:ring-[#7c3aed]"
+                                    : ""
                             }`}
+                            style={{
+                                borderColor: newListName.trim().length > MAX_NAME_LENGTH ? "#ef4444" : theme.colors.primary,
+                                outlineColor: newListName.trim().length > MAX_NAME_LENGTH ? "#ef4444" : theme.colors.primary
+                            }}
                             maxLength={MAX_NAME_LENGTH}
                         />
                         {newListName.trim().length > MAX_NAME_LENGTH && (
@@ -75,11 +81,15 @@ function AddListModal({
                             value={newListDescription}
                             onChange={(e) => onDescriptionChange(e.target.value.slice(0, MAX_DESCRIPTION_LENGTH))}
                             placeholder="Optional description..."
-                            className={`w-full px-4 py-2 rounded-lg border bg-transparent text-gray-100 placeholder:text-[rgba(124,58,237,0.45)] focus:outline-none focus:ring-2 resize-none text-sm transition-all ${
+                            className={`w-full px-4 py-2 rounded-lg border bg-transparent text-gray-100 focus:outline-none focus:ring-2 resize-none text-sm transition-all ${
                                 newListDescription.trim().length > MAX_DESCRIPTION_LENGTH
                                     ? "border-red-500 focus:ring-red-500"
-                                    : "border-[#7c3aed] focus:ring-[#7c3aed]"
+                                    : ""
                             }`}
+                            style={{
+                                borderColor: newListDescription.trim().length > MAX_DESCRIPTION_LENGTH ? "#ef4444" : theme.colors.primary,
+                                outlineColor: newListDescription.trim().length > MAX_DESCRIPTION_LENGTH ? "#ef4444" : theme.colors.primary
+                            }}
                             maxLength={MAX_DESCRIPTION_LENGTH}
                         />
                         {newListDescription.trim().length > MAX_DESCRIPTION_LENGTH && (

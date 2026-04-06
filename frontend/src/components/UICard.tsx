@@ -1,4 +1,5 @@
 import React from "react";
+import useTheme from "../hooks/useTheme";
 
 interface UICardProps {
   children: React.ReactNode;
@@ -13,6 +14,7 @@ export default function UICard({
   padding = "medium",
   darkMode = false,
 }: UICardProps): React.ReactElement {
+  const theme = useTheme();
   const paddingStyles = {
     small: "p-4",
     medium: "p-8",
@@ -23,9 +25,10 @@ export default function UICard({
     <div
       className={`${
         darkMode
-          ? "bg-gray-800 outline-primary-900"
-          : "bg-white outline-primary-200"
+          ? "bg-gray-800"
+          : "bg-white"
       } rounded-2xl shadow-lg outline outline-2 ${paddingStyles[padding]} ${className}`}
+      style={{ outlineColor: theme.colors.primary }}
     >
       {children}
     </div>

@@ -1,4 +1,5 @@
 import React from "react";
+import useTheme from "../hooks/useTheme";
 
 interface UICheckboxProps
     extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -13,6 +14,7 @@ export default function UICheckbox({
     darkMode = false,
     ...props
 }: UICheckboxProps): React.ReactElement {
+    const theme = useTheme();
     const uniqueId = id || `checkbox-${Math.random()}`;
 
     return (
@@ -20,15 +22,13 @@ export default function UICheckbox({
             <input
                 id={uniqueId}
                 type="checkbox"
-                className={`
-                    rounded border-[#7c3aed]
-                    text-[#7c3aed]
-                    accent-[#7c3aed]
-                    focus:ring-[#7c3aed]
-                    focus:ring-offset-0
-                    cursor-pointer
-                    ${className}
-                `}
+                className={`rounded cursor-pointer focus:ring-2 focus:ring-offset-0 ${className}`}
+                style={{
+                    borderColor: theme.colors.primary,
+                    color: theme.colors.primary,
+                    accentColor: theme.colors.primary,
+                    outlineColor: theme.colors.primary,
+                }}
                 {...props}
             />
             {label && (

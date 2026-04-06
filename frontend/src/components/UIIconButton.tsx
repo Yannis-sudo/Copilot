@@ -1,36 +1,97 @@
 import React from "react";
+import useTheme from "../hooks/useTheme";
 
 interface UIIconButtonProps {
-    onClick: () => void;
     icon: React.ReactNode;
-    title: string;
-    className?: string;
+    onClick?: () => void;
     variant?: "default" | "danger" | "success" | "dark";
+    className?: string;
     darkMode?: boolean;
+    disabled?: boolean;
+    type?: "button" | "submit" | "reset";
 }
 
 export default function UIIconButton({
-    onClick,
     icon,
-    title,
-    className = "",
+    onClick,
     variant = "default",
+    className = "",
     darkMode = false,
+    disabled = false,
+    type = "button",
 }: UIIconButtonProps): React.ReactElement {
-    const darkModeStyle = darkMode ? "border border-gray-600" : "";
-    const variantStyles = {
-        default: "text-gray-400 hover:text-[#a78bfa] hover:bg-[rgba(124,58,237,0.12)]",
-        danger:  "text-gray-400 hover:text-red-400 hover:bg-[rgba(124,58,237,0.08)]",
-        success: "text-gray-400 hover:text-yellow-400 hover:bg-[rgba(124,58,237,0.08)]",
-        dark:    "bg-[#7c3aed] text-white hover:bg-[#6d28d9]",
+    const theme = useTheme();
+
+    const getButtonStyle = (): React.CSSProperties => {
+        switch (variant) {
+            case "default":
+                return {
+                    color: "#9ca3af",
+                    backgroundColor: "transparent",
+                };
+            case "danger":
+                return {
+                    color: "#9ca3af",
+                    backgroundColor: "transparent",
+                };
+            case "success":
+                return {
+                    color: "#9ca3af",
+                    backgroundColor: "transparent",
+                };
+            case "dark":
+                return {
+                    backgroundColor: theme.colors.primary,
+                    color: "white",
+                };
+            default:
+                return {};
+        }
+    };
+
+    const getHoverStyle = (): React.CSSProperties => {
+        switch (variant) {
+            case "default":
+                return {
+                    color: theme.colors.primaryLight,
+                    backgroundColor: theme.colors.alpha12,
+                };
+            case "danger":
+                return {
+                    color: "#ef4444",
+                    backgroundColor: "rgba(239, 68, 68, 0.08)",
+                };
+            case "success":
+                return {
+                    color: "#eab308",
+                    backgroundColor: "rgba(234, 179, 8, 0.08)",
+                };
+            case "dark":
+                return {
+                    backgroundColor: theme.colors.primaryDarker,
+                };
+            default:
+                return {};
+        }
     };
 
     return (
         <button
-            type="button"
+            type={type}
             onClick={onClick}
-            title={title}
-            className={`w-9 h-9 flex items-center justify-center rounded-lg transition-colors ${variantStyles[variant]} ${darkModeStyle} ${className}`}
+            disabled={disabled}
+            className={`p-2 rounded-lg transition-all duration-200 ${darkMode ? "border border-gray-600" : ""} ${disabled ? "opacity-50 cursor-not-allowed" : ""} ${className}`}
+            style={getButtonStyle()}
+            onMouseEnter={(e) => {
+                if (!disabled) {
+                    Object.assign((e.target as HTMLButtonElement).style, getHoverStyle());
+                }
+            }}
+            onMouseLeave={(e) => {
+                if (!disabled) {
+                    Object.assign((e.target as HTMLButtonElement).style, getButtonStyle());
+                }
+            }}
         >
             {icon}
         </button>

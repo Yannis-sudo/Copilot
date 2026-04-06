@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import useTheme from "../hooks/useTheme";
 
 interface NavLink {
     label: string;
@@ -22,8 +23,9 @@ export default function UINavbar({
     darkMode = false,
     onToggleDarkMode,
 }: UINavbarProps): React.ReactElement {
+    const theme = useTheme();
     return (
-        <nav className="bg-[#7c3aed] text-white">
+        <nav style={{ backgroundColor: theme.colors.primary, color: "white" }}>
             <div className="max-w-7xl mx-auto px-4">
                 <div className="relative flex h-16 items-center justify-between">
 
@@ -37,7 +39,8 @@ export default function UINavbar({
                                 return (
                                     <span
                                         key={link.href}
-                                        className="text-[rgba(255,255,255,0.35)] select-none"
+                                        style={{ color: "rgba(255,255,255,0.35)" }}
+                                        className="select-none"
                                         title="Not available"
                                     >
                                         {link.label}
@@ -49,11 +52,22 @@ export default function UINavbar({
                                 <Link
                                     key={link.href}
                                     to={link.href}
-                                    className={`transition-colors ${
-                                        link.active
-                                            ? "text-white font-semibold border-b-2 border-white"
-                                            : "text-[rgba(255,255,255,0.70)] hover:text-white"
-                                    }`}
+                                    className="transition-colors"
+                                    style={{
+                                        color: link.active ? "white" : "rgba(255,255,255,0.70)",
+                                        fontWeight: link.active ? "600" : "normal",
+                                        borderBottom: link.active ? "2px solid white" : "none"
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        if (!link.active) {
+                                            (e.target as HTMLAnchorElement).style.color = "white";
+                                        }
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        if (!link.active) {
+                                            (e.target as HTMLAnchorElement).style.color = "rgba(255,255,255,0.70)";
+                                        }
+                                    }}
                                 >
                                     {link.label}
                                 </Link>

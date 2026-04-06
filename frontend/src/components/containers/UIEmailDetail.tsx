@@ -276,7 +276,6 @@ export default function UIEmailDetail(props: UIEmailDetailProps) {
                 <div className="flex items-center gap-1">
                     <UIIconButton
                         onClick={handleStar}
-                        title="Star"
                         variant="success"
                         darkMode={props.darkMode}
                         icon={
@@ -287,7 +286,6 @@ export default function UIEmailDetail(props: UIEmailDetailProps) {
                     />
                     <UIIconButton
                         onClick={handleMarkUnread}
-                        title="Mark as unread"
                         darkMode={props.darkMode}
                         icon={
                             <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -297,7 +295,6 @@ export default function UIEmailDetail(props: UIEmailDetailProps) {
                     />
                     <UIIconButton
                         onClick={handleArchive}
-                        title="Archive"
                         darkMode={props.darkMode}
                         icon={
                             <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -307,7 +304,6 @@ export default function UIEmailDetail(props: UIEmailDetailProps) {
                     />
                     <UIIconButton
                         onClick={handleDelete}
-                        title="Delete"
                         variant="danger"
                         darkMode={props.darkMode}
                         icon={

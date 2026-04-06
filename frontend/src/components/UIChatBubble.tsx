@@ -1,33 +1,38 @@
 import React from "react";
+import useTheme from "../hooks/useTheme";
 
 interface UIChatBubbleProps {
     message: string;
     role: "user" | "ai";
     darkMode?: boolean;
+    isUser?: boolean;
 }
 
 export default function UIChatBubble({
     message,
     role,
-    darkMode = false,
 }: UIChatBubbleProps): React.ReactElement {
-    const isUser = role === "user";
+    const theme = useTheme();
+    const isUserFromRole = role === "user";
 
-    // AI response: no bubble, plain text
-    if (!isUser) {
+    // AI message: left-aligned bubble in gray
+    if (!isUserFromRole) {
         return (
-            <div className="w-full max-w-2xl mx-auto mb-6 px-4">
-                <p className={`text-sm leading-relaxed ${darkMode ? "text-gray-300" : "text-gray-700"}`}>
+            <div className="flex w-full justify-start mb-4">
+                <div className="max-w-[75%] px-4 py-2.5 rounded-2xl rounded-bl-sm text-sm leading-relaxed shadow-sm bg-gray-100 text-gray-800">
                     {message}
-                </p>
+                </div>
             </div>
         );
     }
 
-    // User message: right-aligned bubble in brand purple
+    // User message: right-aligned bubble in brand teal
     return (
         <div className="flex w-full justify-end mb-4">
-            <div className="max-w-[75%] px-4 py-2.5 rounded-2xl rounded-br-sm text-sm leading-relaxed shadow-sm bg-[#7c3aed] text-white">
+            <div 
+                className="max-w-[75%] px-4 py-2.5 rounded-2xl rounded-br-sm text-sm leading-relaxed shadow-sm text-white"
+                style={{ backgroundColor: theme.colors.primary }}
+            >
                 {message}
             </div>
         </div>

@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 import type { ReactNode } from "react";
-import type { Folder, ListInfo } from "../types/api";
-import { fetchEmails, getLists } from "../api";
+import type { Folder, ListInfo, NoteInfo } from "../types/api";
+import { fetchEmails, getLists, getNotes } from "../api";
 import { AUTH_MESSAGES } from "../constants";
 
 export interface UserSettings {
@@ -19,6 +19,9 @@ export interface AppSettings {
   lists: ListInfo[];
   listsLoading: boolean;
   listsError: string | null;
+  notes: NoteInfo[];
+  notesLoading: boolean;
+  notesError: string | null;
   [key: string]: unknown;
 }
 
@@ -36,6 +39,12 @@ interface SettingsContextType {
   setListsError: (error: string | null) => void;
   loadLists: () => Promise<void>;
   refreshLists: () => Promise<void>;
+  setNotes: (notes: NoteInfo[]) => void;
+  setNotesLoading: (loading: boolean) => void;
+  setNotesError: (error: string | null) => void;
+  loadNotes: () => Promise<void>;
+  refreshNotes: () => Promise<void>;
+  addNoteToState: (note: NoteInfo) => void;
 }
 
 const defaultSettings: AppSettings = {
@@ -51,6 +60,9 @@ const defaultSettings: AppSettings = {
   lists: [],
   listsLoading: false,
   listsError: null,
+  notes: [],
+  notesLoading: false,
+  notesError: null,
 };
 
 const SettingsContext = createContext<SettingsContextType>({
@@ -67,6 +79,12 @@ const SettingsContext = createContext<SettingsContextType>({
   setListsError: () => {},
   loadLists: async () => {},
   refreshLists: async () => {},
+  setNotes: () => {},
+  setNotesLoading: () => {},
+  setNotesError: () => {},
+  loadNotes: async () => {},
+  refreshNotes: async () => {},
+  addNoteToState: () => {},
 });
 
 export const SettingsProvider = ({ children }: { children: ReactNode }) => {
@@ -128,6 +146,71 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     await loadLists();
   }, [loadLists]);
 
+  const setNotes = (notes: NoteInfo[]) => {
+    setSettings((prev) => ({ ...prev, notes }));
+  };
+
+  const setNotesLoading = (loading: boolean) => {
+    setSettings((prev) => ({ ...prev, notesLoading: loading }));
+  };
+
+  const setNotesError = (error: string | null) => {
+    setSettings((prev) => ({ ...prev, notesError: error }));
+  };
+
+  const loadNotes = useCallback(async () => {
+    const email = settings.user.email;
+    const password = settings.user.password;
+    if (!email || !password || settings.lists.length === 0) return;
+
+    setNotesLoading(true);
+    setNotesError(null);
+    
+    try {
+      // Load notes for all lists in parallel for optimal performance
+      const notesPromises = settings.lists.map(async (list) => {
+        try {
+          const res = await getNotes({ 
+            email, 
+            password, 
+            list_id: list.list_id, 
+            page: 1, 
+            page_size: 50 
+          });
+          return (res as any).notes || [];
+        } catch (error) {
+          console.error(`Error loading notes for list ${list.list_id}:`, error);
+          return []; // Return empty array for failed lists
+        }
+      });
+
+      const allNotesResults = await Promise.all(notesPromises);
+      const allNotes = allNotesResults.flat();
+      
+      setNotes(allNotes);
+    } catch (error) {
+      console.error("Error loading notes:", error);
+      setNotesError("Failed to load notes");
+    } finally {
+      setNotesLoading(false);
+    }
+  }, [settings.user.email, settings.user.password, settings.lists]);
+
+  const refreshNotes = useCallback(async () => {
+    await loadNotes();
+  }, [loadNotes]);
+
+  // Load notes after lists are loaded
+  useEffect(() => {
+    if (settings.lists.length > 0 && !settings.notesLoading && settings.notes.length === 0) {
+      loadNotes();
+    }
+  }, [settings.lists, loadNotes]);
+
+  const addNoteToState = useCallback((note: NoteInfo) => {
+    setSettings((prev) => ({ ...prev, notes: [...prev.notes, note] }));
+  }, []);
+
   const loadEmails = async () => {
     const email = settings.user.email;
     const password = settings.user.password;
@@ -166,7 +249,27 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <SettingsContext.Provider
-      value={{ settings, setSettings, setUser, toggleDarkMode, setShowFolderPreview, setEmails, setEmailsLoading, loadEmails, setLists, setListsLoading, setListsError, loadLists, refreshLists }}
+      value={{ 
+        settings, 
+        setSettings, 
+        setUser, 
+        toggleDarkMode, 
+        setShowFolderPreview, 
+        setEmails, 
+        setEmailsLoading, 
+        loadEmails, 
+        setLists, 
+        setListsLoading, 
+        setListsError, 
+        loadLists, 
+        refreshLists,
+        setNotes,
+        setNotesLoading,
+        setNotesError,
+        loadNotes,
+        refreshNotes,
+        addNoteToState
+      }}
     >
       {children}
     </SettingsContext.Provider>

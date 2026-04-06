@@ -97,12 +97,33 @@ export interface GetListsPayload {
   page_size?: number;
 }
 
+export interface GetNotesPayload {
+  email: string;
+  password: string;
+  list_id: string;
+  page?: number;
+  page_size?: number;
+}
+
 export interface ListInfo {
   list_id: string;
   list_name: string;
   description: string;
   created_by: string;
   admins: string[];
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface NoteInfo {
+  note_id: string;
+  title: string;
+  description: string;
+  priority: string;
+  author_name: string;
+  author_email: string;
+  list_id: string;
+  column: string;
   created_at?: string;
   updated_at?: string;
 }

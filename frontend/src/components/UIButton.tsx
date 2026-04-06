@@ -1,4 +1,5 @@
 import React from "react";
+import useTheme from "../hooks/useTheme";
 
 interface UIButtonProps {
     children: React.ReactNode;
@@ -19,16 +20,56 @@ export default function UIButton({
     className = "",
     darkMode = false,
 }: UIButtonProps): React.ReactElement {
+    const theme = useTheme();
     const baseStyles =
         "px-4 py-2 rounded-lg font-semibold transition-colors text-sm flex items-center justify-center gap-2";
 
-    const variantStyles = {
-        // Use arbitrary value syntax for the custom purple brand color
-        primary: "bg-[#7c3aed] text-white hover:bg-[#6d28d9] disabled:opacity-50 text-center",
-        secondary: darkMode
-            ? "bg-gray-700 text-gray-100 border border-gray-600 hover:bg-gray-600 disabled:opacity-50 text-center"
-            : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 disabled:opacity-50 text-center",
-        danger: "bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 text-center",
+    const getButtonStyle = (): React.CSSProperties => {
+        switch (variant) {
+            case "primary":
+                return {
+                    backgroundColor: theme.colors.primary,
+                    color: "white",
+                };
+            case "secondary":
+                return darkMode
+                    ? {
+                        backgroundColor: "#374151",
+                        color: "#f3f4f6",
+                        border: "1px solid #4b5563",
+                    }
+                    : {
+                        backgroundColor: "white",
+                        color: "#374151",
+                        border: "1px solid #d1d5db",
+                    };
+            case "danger":
+                return {
+                    backgroundColor: "#dc2626",
+                    color: "white",
+                };
+            default:
+                return {};
+        }
+    };
+
+    const getHoverStyle = (): React.CSSProperties => {
+        switch (variant) {
+            case "primary":
+                return {
+                    backgroundColor: theme.colors.primaryDarker,
+                };
+            case "secondary":
+                return darkMode
+                    ? { backgroundColor: "#4b5563" }
+                    : { backgroundColor: "#f9fafb" };
+            case "danger":
+                return {
+                    backgroundColor: "#b91c1c",
+                };
+            default:
+                return {};
+        }
     };
 
     return (
@@ -36,7 +77,18 @@ export default function UIButton({
             type={type}
             onClick={onClick}
             disabled={disabled}
-            className={`${baseStyles} ${variantStyles[variant]} ${className}`}
+            className={`${baseStyles} ${variant === "secondary" ? "border" : ""} ${disabled ? "opacity-50 cursor-not-allowed" : ""} ${className}`}
+            style={getButtonStyle()}
+            onMouseEnter={(e) => {
+                if (!disabled) {
+                    Object.assign((e.target as HTMLButtonElement).style, getHoverStyle());
+                }
+            }}
+            onMouseLeave={(e) => {
+                if (!disabled) {
+                    Object.assign((e.target as HTMLButtonElement).style, getButtonStyle());
+                }
+            }}
         >
             {children}
         </button>
