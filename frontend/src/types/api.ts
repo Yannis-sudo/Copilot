@@ -18,6 +18,11 @@ export interface LoginPayload {
   password: string;
 }
 
+export interface LoginResponse extends ApiResponse {
+  username?: string;
+  email?: string;
+}
+
 export interface AddEmailServerPayload {
   email: string;
   server_incoming: string;
@@ -80,6 +85,7 @@ export interface AddNotePayload {
   author_name: string;
   author_email: string;
   list_id: string;
+  column: string;
 }
 
 export interface AddListPayload {

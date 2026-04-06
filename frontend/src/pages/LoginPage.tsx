@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { login } from "../api";
 import { AUTH_MESSAGES } from "../constants";
-import type { LoginPayload } from "../types";
+import type { LoginPayload, LoginResponse } from "../types";
 import UITextInput from "../components/UITextInput";
 import UICheckbox from "../components/UICheckbox";
 import UIButton from "../components/UIButton";
@@ -27,7 +27,7 @@ function LoginPage(): React.ReactElement {
         setError(null);
 
         try {
-            const response = await login(credentials);
+            const response: LoginResponse = await login(credentials);
 
             if (response.message === AUTH_MESSAGES.SUCCESS) {
                 setUser({ 
