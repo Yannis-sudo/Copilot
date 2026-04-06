@@ -1,4 +1,5 @@
 import UIIconButton from "./UIIconButton";
+import ListOptionsDropdown from "./ListOptionsDropdown";
 import type { ListInfo, NoteInfo } from "../types/api";
 import useTheme from "../hooks/useTheme";
 
@@ -18,12 +19,13 @@ interface NotesSidebarProps {
     onAddList: () => void;
     onSelectList: (listId: string) => void;
     onListDetail?: (list: ListInfo) => void;
+    onDeleteList?: (listId: string, listName: string) => void;
     listsLoading: boolean;
     listsError: string | null;
     onRefreshLists: () => void;
 }
 
-function NotesSidebar({ lists, notes, activeListId, visibleNotes, onAddList, onSelectList, onListDetail, listsLoading, listsError, onRefreshLists }: NotesSidebarProps) {
+function NotesSidebar({ lists, notes, activeListId, visibleNotes, onAddList, onSelectList, onListDetail, onDeleteList, listsLoading, listsError, onRefreshLists }: NotesSidebarProps) {
     const theme = useTheme();
     return (
         <aside
@@ -146,49 +148,34 @@ function NotesSidebar({ lists, notes, activeListId, visibleNotes, onAddList, onS
                                     }}
                                 >
                                     <span>{list.list_name}</span>
-                                    <span 
-                                        className="text-xs px-1.5 py-0.5 rounded-full transition-colors"
-                                        style={{
-                                            backgroundColor: isActive ? theme.colors.alpha25 : "rgba(255,255,255,0.06)",
-                                            color: isActive ? theme.colors.primaryLight : "#6b7280"
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            if (!isActive) {
-                                                (e.target as HTMLElement).style.backgroundColor = "rgba(255,255,255,0.10)";
-                                                (e.target as HTMLElement).style.color = "#d1d5db";
-                                            }
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            if (!isActive) {
-                                                (e.target as HTMLElement).style.backgroundColor = "rgba(255,255,255,0.06)";
-                                                (e.target as HTMLElement).style.color = "#6b7280";
-                                            }
-                                        }}
-                                    >
-                                        {count}
-                                    </span>
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => onListDetail?.(list)}
-                                    className="opacity-0 group-hover:opacity-100 transition-all duration-200 absolute right-1 top-1.5 text-xs px-1.5 py-1 rounded-md shadow-sm"
-                                    style={{
-                                        color: theme.colors.primaryLight
-                                    }}
-                                    onMouseEnter={(e) => {
-                                        (e.target as HTMLButtonElement).style.color = "white";
-                                        (e.target as HTMLButtonElement).style.backgroundColor = theme.colors.alpha25;
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        (e.target as HTMLButtonElement).style.color = theme.colors.primaryLight;
-                                        (e.target as HTMLButtonElement).style.backgroundColor = "transparent";
-                                    }}
-                                    title="View details"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                    </svg>
+                                    <div className="flex items-center gap-2">
+                                        <span 
+                                            className="text-xs px-1.5 py-0.5 rounded-full transition-colors"
+                                            style={{
+                                                backgroundColor: isActive ? theme.colors.alpha25 : "rgba(255,255,255,0.06)",
+                                                color: isActive ? theme.colors.primaryLight : "#6b7280"
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                if (!isActive) {
+                                                    (e.target as HTMLElement).style.backgroundColor = "rgba(255,255,255,0.10)";
+                                                    (e.target as HTMLElement).style.color = "#d1d5db";
+                                                }
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                if (!isActive) {
+                                                    (e.target as HTMLElement).style.backgroundColor = "rgba(255,255,255,0.06)";
+                                                    (e.target as HTMLElement).style.color = "#6b7280";
+                                                }
+                                            }}
+                                        >
+                                            {count}
+                                        </span>
+                                        <ListOptionsDropdown
+                                            list={list}
+                                            onDelete={onDeleteList || (() => {})}
+                                            onDetails={onListDetail || (() => {})}
+                                        />
+                                    </div>
                                 </button>
                             </div>
                         );

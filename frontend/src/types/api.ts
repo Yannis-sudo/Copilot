@@ -111,6 +111,19 @@ export interface GetNotesPayload {
   page_size?: number;
 }
 
+export interface DeleteListPayload {
+  email: string;
+  password: string;
+  list_id: string;
+}
+
+export interface UpdateNoteColumnPayload {
+  email: string;
+  password: string;
+  note_id: string;
+  new_column: string;
+}
+
 export interface ListInfo {
   list_id: string;
   list_name: string;

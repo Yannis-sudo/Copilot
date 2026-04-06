@@ -5,9 +5,11 @@ import KanbanColumn from "../components/KanbanColumn";
 import AddNoteModal from "../components/AddNoteModal";
 import AddListModal from "../components/AddListModal";
 import NotesSidebar from "../components/NotesSidebar";
+import ConfirmDialog from "../components/ConfirmDialog";
+import ListDetailModal from "../components/ListDetailModal";
 import { useSettings } from "../context/SettingsContext";
-import { addNote, addList } from "../api";
-import type { NoteInfo } from "../types/api";
+import { addNote, addList, deleteList, updateNoteColumn } from "../api";
+import type { NoteInfo, ListInfo } from "../types/api";
 
 // Priority levels with matching colors
 type Priority = "low" | "medium" | "high";
@@ -48,6 +50,14 @@ function NotesPage() {
     const [newListName, setNewListName] = useState("");
     const [newListDescription, setNewListDescription] = useState("");
 
+    // Delete confirmation dialog state
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [listToDelete, setListToDelete] = useState<{ id: string; name: string } | null>(null);
+
+    // List detail modal state
+    const [showListDetail, setShowListDetail] = useState(false);
+    const [listDetail, setListDetail] = useState<ListInfo | null>(null);
+
     // Load lists on component mount
     useEffect(() => {
         if (settings.user.email && settings.user.password) {
@@ -74,13 +84,33 @@ function NotesPage() {
         setDragOverColumn(columnId);
     };
 
-    const handleDrop = (_columnId: ColumnId) => {
+    const handleDrop = async (columnId: ColumnId) => {
         if (!draggingId) return;
-        // Update the note's column in global state
-        // This would require a backend update, for now just update local view
-        // In a real implementation, you'd call an API to update the note's column
-        setDraggingId(null);
-        setDragOverColumn(null);
+        
+        try {
+            // Get user credentials from settings context
+            const email = settings.user.email;
+            const password = settings.user.password;
+            
+            const payload = {
+                email,
+                password,
+                note_id: draggingId,
+                new_column: columnId
+            };
+            
+            await updateNoteColumn(payload);
+            
+            // Refresh notes after successful column update
+            await refreshNotes();
+            
+        } catch (error) {
+            console.error('Failed to update note column:', error);
+            // You could show an error message to user here
+        } finally {
+            setDraggingId(null);
+            setDragOverColumn(null);
+        }
     };
 
     const handleDragEnd = () => {
@@ -125,6 +155,53 @@ function NotesPage() {
         setShowAddList(false);
         setNewListName("");
         setNewListDescription("");
+    };
+
+    const handleDeleteList = (listId: string, listName: string) => {
+        setListToDelete({ id: listId, name: listName });
+        setShowDeleteConfirm(true);
+    };
+
+    const confirmDeleteList = async () => {
+        if (!listToDelete) return;
+
+        try {
+            // Get user credentials from settings context
+            const email = settings.user.email;
+            const password = settings.user.password;
+            
+            const payload = {
+                email,
+                password,
+                list_id: listToDelete.id
+            };
+            
+            await deleteList(payload);
+            
+            // Refresh lists after successful deletion
+            await refreshLists();
+            
+            // Clear active list if it was the deleted one
+            if (activeListId === listToDelete.id) {
+                setActiveListId("");
+            }
+            
+            setShowDeleteConfirm(false);
+            setListToDelete(null);
+        } catch (error) {
+            console.error('Failed to delete list:', error);
+            // You could show an error message to user here
+        }
+    };
+
+    const cancelDeleteList = () => {
+        setShowDeleteConfirm(false);
+        setListToDelete(null);
+    };
+
+    const handleListDetail = (list: ListInfo) => {
+        setListDetail(list);
+        setShowListDetail(true);
     };
 
     const handleOpenAddNote = (columnId: ColumnId) => {
@@ -195,6 +272,8 @@ function NotesPage() {
                     visibleNotes={visibleNotes}
                     onAddList={handleAddList}
                     onSelectList={setActiveListId}
+                    onListDetail={handleListDetail}
+                    onDeleteList={handleDeleteList}
                     listsLoading={settings.listsLoading}
                     listsError={settings.listsError}
                     onRefreshLists={() => {
@@ -288,6 +367,25 @@ function NotesPage() {
                 onListNameChange={setNewListName}
                 onDescriptionChange={setNewListDescription}
                 onSave={handleSaveList}
+            />
+
+            {/* Delete confirmation dialog */}
+            <ConfirmDialog
+                isOpen={showDeleteConfirm}
+                title="Delete List"
+                message={`Are you sure you want to delete "${listToDelete?.name}"? This action cannot be undone and will remove all notes in this list.`}
+                confirmText="Delete"
+                cancelText="Cancel"
+                onConfirm={confirmDeleteList}
+                onCancel={cancelDeleteList}
+                isDangerous={true}
+            />
+
+            {/* List detail modal */}
+            <ListDetailModal
+                show={showListDetail}
+                onClose={() => setShowListDetail(false)}
+                list={listDetail}
             />
 
             </React.Fragment>

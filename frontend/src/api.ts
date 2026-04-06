@@ -6,7 +6,7 @@ import {
   API_CONFIG,
   ERROR_MESSAGES,
 } from "./constants";
-import type { ApiResponse, CreateAccountPayload, LoginPayload, LoginResponse, AddEmailServerPayload, AddFolderPayload, SendEmailPayload, AddNotePayload, AddListPayload, GetListsPayload, GetNotesPayload } from "./types";
+import type { ApiResponse, CreateAccountPayload, LoginPayload, LoginResponse, AddEmailServerPayload, AddFolderPayload, SendEmailPayload, AddNotePayload, AddListPayload, GetListsPayload, GetNotesPayload, DeleteListPayload, UpdateNoteColumnPayload } from "./types";
 
 /**
  * Make an API request with error handling
@@ -181,6 +181,26 @@ export async function getLists(payload: GetListsPayload): Promise<ApiResponse> {
 export async function getNotes(payload: GetNotesPayload): Promise<ApiResponse> {
   return makeRequest<ApiResponse>(API_CONFIG.ENDPOINTS.GET_NOTES, {
     method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+/**
+ * Delete a list
+ */
+export async function deleteList(payload: DeleteListPayload): Promise<ApiResponse> {
+  return makeRequest<ApiResponse>(API_CONFIG.ENDPOINTS.DELETE_LIST, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+/**
+ * Update a note's column
+ */
+export async function updateNoteColumn(payload: UpdateNoteColumnPayload): Promise<ApiResponse> {
+  return makeRequest<ApiResponse>(API_CONFIG.ENDPOINTS.UPDATE_NOTE_COLUMN, {
+    method: "PUT",
     body: JSON.stringify(payload),
   });
 }
