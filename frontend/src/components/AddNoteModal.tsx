@@ -1,5 +1,7 @@
 import UIButton from "./UIButton";
+import UITextInput from "./UITextInput";
 import Modal from "./Modal";
+import useTheme from "../hooks/useTheme";
 
 type Priority = "low" | "medium" | "high";
 type ColumnId = "backlog" | "todo" | "in-progress" | "done";
@@ -28,25 +30,32 @@ interface AddNoteModalProps {
 }
 
 function AddNoteModal({ show, onClose, addNoteColumn, newNote, onNoteChange, onColumnChange, onSave }: AddNoteModalProps) {
+    const theme = useTheme();
+    
     if (!show) return null;
 
     return (
         <Modal onClose={onClose}>
             <div className="space-y-4">
-                <h2 className="text-xl font-bold text-gray-100">
+                <h2 className="text-xl font-bold" style={{ color: theme.colors.textPrimary }}>
                     New Note —{" "}
-                    <span className="text-[#a78bfa]">
+                    <span style={{ color: theme.colors.primaryLight }}>
                         {COLUMNS.find((c) => c.id === addNoteColumn)?.label}
                     </span>
                 </h2>
 
                 <div className="space-y-3">
                     <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-1">Column</label>
+                        <label className="block text-sm font-medium mb-1" style={{ color: theme.colors.textSecondary }}>Column</label>
                         <select
                             value={addNoteColumn}
                             onChange={(e) => onColumnChange(e.target.value as ColumnId)}
-                            className="w-full px-4 py-2 rounded-lg border border-[#7c3aed] bg-transparent text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#7c3aed] text-sm transition-all"
+                            className="w-full px-4 py-2 rounded-lg border text-sm transition-all"
+                            style={{
+                                borderColor: theme.colors.primary,
+                                backgroundColor: theme.colors.alpha08,
+                                color: theme.colors.textPrimary
+                            }}
                         >
                             {COLUMNS.map((col) => (
                                 <option key={col.id} value={col.id}>
@@ -56,30 +65,31 @@ function AddNoteModal({ show, onClose, addNoteColumn, newNote, onNoteChange, onC
                         </select>
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-1">Title</label>
-                        <input
-                            type="text"
-                            value={newNote.title}
-                            onChange={(e) => onNoteChange({ ...newNote, title: e.target.value })}
-                            placeholder="Note title"
-                            className="w-full px-4 py-2 rounded-lg border border-[#7c3aed] bg-transparent text-gray-100 placeholder:text-[rgba(124,58,237,0.45)] focus:outline-none focus:ring-2 focus:ring-[#7c3aed] text-sm transition-all"
-                        />
-                    </div>
+                    <UITextInput
+                        label="Title"
+                        value={newNote.title}
+                        onChange={(e) => onNoteChange({ ...newNote, title: e.target.value })}
+                        placeholder="Note title"
+                    />
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-1">Description</label>
+                        <label className="block text-sm font-medium mb-1" style={{ color: theme.colors.textSecondary }}>Description</label>
                         <textarea
                             rows={3}
                             value={newNote.body}
                             onChange={(e) => onNoteChange({ ...newNote, body: e.target.value })}
                             placeholder="Optional description..."
-                            className="w-full px-4 py-2 rounded-lg border border-[#7c3aed] bg-transparent text-gray-100 placeholder:text-[rgba(124,58,237,0.45)] focus:outline-none focus:ring-2 focus:ring-[#7c3aed] resize-none text-sm transition-all"
+                            className="w-full px-4 py-2 rounded-lg border text-sm transition-all resize-none"
+                            style={{
+                                borderColor: theme.colors.primary,
+                                backgroundColor: theme.colors.alpha08,
+                                color: theme.colors.textPrimary
+                            }}
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-1">Priority</label>
+                        <label className="block text-sm font-medium mb-1" style={{ color: theme.colors.textSecondary }}>Priority</label>
                         <div className="flex gap-2">
                             {(["low", "medium", "high"] as Priority[]).map((p) => (
                                 <button
@@ -89,8 +99,12 @@ function AddNoteModal({ show, onClose, addNoteColumn, newNote, onNoteChange, onC
                                     className={`flex-1 py-1.5 rounded-lg text-xs font-semibold border transition-all capitalize ${
                                         newNote.priority === p
                                             ? PRIORITY_STYLES[p]
-                                            : "border-[rgba(124,58,237,0.20)] text-gray-500 hover:border-[rgba(124,58,237,0.40)]"
+                                            : "text-gray-500 hover:border-opacity-40"
                                     }`}
+                                    style={{
+                                        borderColor: newNote.priority === p ? undefined : theme.colors.border,
+                                        backgroundColor: newNote.priority === p ? undefined : theme.colors.alpha08
+                                    }}
                                 >
                                     {p}
                                 </button>

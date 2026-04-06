@@ -22,7 +22,7 @@ export default function UITextInput({
     const getInputStyle = (): React.CSSProperties => ({
         backgroundColor: theme.colors.alpha08,
         borderColor: error ? "#ef4444" : theme.colors.primary,
-        color: darkMode ? "white" : "#1f2937",
+        color: theme.colors.textPrimary,
     });
 
     const getFocusStyle = (): React.CSSProperties => ({
@@ -37,7 +37,8 @@ export default function UITextInput({
             {label && (
                 <label
                     htmlFor={uniqueId}
-                    className={`block text-sm font-medium mb-1 ${darkMode ? "text-gray-300" : "text-gray-700"}`}
+                    className="block text-sm font-medium mb-1"
+                    style={{ color: theme.colors.textSecondary }}
                 >
                     {label}
                 </label>

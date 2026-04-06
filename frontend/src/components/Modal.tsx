@@ -18,7 +18,7 @@ function Modal({ children, onClose }: ModalProps) {
                 className="w-full max-w-lg mx-4 p-6 rounded-2xl border"
                 style={{
                     borderColor: theme.colors.border,
-                    backgroundColor: "rgba(20,20,20,0.96)",
+                    backgroundColor: theme.colors.surface,
                     boxShadow: `0 0 60px ${theme.colors.shadow}`
                 }}
                 onClick={(e) => e.stopPropagation()}
