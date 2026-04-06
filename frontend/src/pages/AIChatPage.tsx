@@ -47,15 +47,7 @@ function AIChatPage(): React.ReactElement {
     setInput("");
     setIsTyping(true);
 
-    // TODO: Replace with a real call to your FastAPI backend.
-    // Example:
-    //   const res = await fetch("/api/chat", {
-    //     method: "POST",
-    //     headers: { "Content-Type": "application/json" },
-    //     body: JSON.stringify({ message: trimmed }),
-    //   });
-    //   const data = await res.json();
-    //   const aiText = data.reply;
+    // Simulate AI response for now
     await new Promise((res) => setTimeout(res, 1200));
 
     const aiMessage: Message = {

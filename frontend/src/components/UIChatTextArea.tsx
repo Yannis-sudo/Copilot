@@ -3,7 +3,7 @@ import useTheme from "../hooks/useTheme";
 
 interface UIChatTextAreaProps {
     value: string;
-    onChange: (value: string) => void;
+    onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
     onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
     onSend: () => void;
     disabled?: boolean;
@@ -37,7 +37,7 @@ export default function UIChatTextArea({
                 <textarea
                     rows={1}
                     value={value}
-                    onChange={(e) => onChange(e.target.value)}
+                    onChange={onChange}
                     onKeyDown={onKeyDown}
                     placeholder={placeholder}
                     disabled={disabled}

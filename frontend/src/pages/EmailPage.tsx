@@ -77,11 +77,8 @@ export const testFolderHierarchy = () => {
         { id: 'Archive/2023', label: '2023', emails: [] },
         { id: 'Archive/2024', label: '2024', emails: [] },
     ];
-    
-    console.log("Testing folder hierarchy with mock data...");
-    const result = buildFolderTree(mockFolders);
-    console.log("Test result:", result);
-    return result;
+
+    return buildFolderTree(mockFolders);
 };
 
 // Recursive component to render folder tree
@@ -261,7 +258,7 @@ function EmailPage() {
 
     const { settings, setShowFolderPreview, setEmails, loadEmails } = useSettings();
     const { darkMode } = settings;
-    const [selectedFolderId, setSelectedFolderId] = useState<string>("inbox");
+    const [selectedFolderId, setSelectedFolderId] = useState<string>("");
     const [selectedEmailId, setSelectedEmailId] = useState<string | null>(null);
     const [showCompose, setShowCompose] = useState(false);
     const [compose, setCompose] = useState({ to: "", subject: "", body: "" });
@@ -272,8 +269,14 @@ function EmailPage() {
     const [collapsedFolders, setCollapsedFolders] = useState<Set<string>>(new Set());
 
     const folders = buildFolderTree(settings.emails);
-    
-    // Helper function to find folder in hierarchical tree
+
+    // Ensure the selected folder is valid when folders change
+    useEffect(() => {
+        if (folders.length > 0) {
+            setSelectedFolderId((prev) => prev || folders[0].id);
+        }
+    }, [folders]);
+
     const findFolderInTree = (folders: Folder[], folderId: string): Folder | null => {
         for (const folder of folders) {
             if (folder.id === folderId) {
@@ -295,64 +298,73 @@ function EmailPage() {
 
     // Fetch emails from the backend on page load.
     // The backend uses the stored credentials to connect to the user's mail server.
-    const getEmails = async () => {
-        const email = settings.user.email;
+    const fetchEmailsFromBackend = async () => {
+        const userEmail = settings.user.email;
         const password = settings.user.password;
-        console.log("Fetching emails with credentials:", { email, password: "***" });
-        
-        const res = await fetchEmails({ email, password });
-        console.log("Fetch emails response:", res);
 
+        if (!userEmail || !password) {
+            navigate("/login");
+            return;
+        }
+
+        return await fetchEmails({ email: userEmail, password });
+    };
+
+    const handleFetchResponse = (res: any) => {
         if (res.message === AUTH_MESSAGES.INVALID_CREDENTIALS) {
-            // Credentials are wrong — send back to login
             alert("Invalid credentials. Please check your email and password.");
             navigate("/login");
             return;
         }
 
         if (res.message === AUTH_MESSAGES.EMAIL_NOT_FOUND) {
-            // No mail account configured yet — redirect to setup page
-            console.log("Email not found, redirecting to setup");
             navigate("/email-setup");
             return;
         }
 
-        // On success, transform API data to frontend format
-        if (res.message === AUTH_MESSAGES.EMAILS_FETCHED && (res as any).emails) {
-            const apiData = (res as any).emails;
-            console.log("API Data received:", apiData);
-            console.log("Folders from API:", apiData.folders);
-            
-    // Transform folders and emails from API to frontend format
-            const transformedFolders: Folder[] = apiData.folders.map((folderName: string) => ({
-                id: folderName,
-                label: folderName.split('/').pop() || folderName, // Show only the last part of the path
-                emails: apiData.emails
-                    .filter((email: any) => email.folder === folderName)
-                    .map((email: any) => ({
-                        id: email.message_id,
-                        from: email.from,
-                        subject: email.subject,
-                        date: email.date,
-                        folder: email.folder,
-                        message_id: email.message_id,
-                        body: email.body,
-                        attachments: email.attachments || [],
-                        has_attachments: email.has_attachments || false
-                    }))
-            }));
-            
-            console.log("Transformed folders:", transformedFolders);
+        if (res.message === AUTH_MESSAGES.EMAILS_FETCHED && res.emails) {
+            const transformedFolders = transformApiDataToFolders(res.emails);
             setEmails(transformedFolders);
         }
     };
 
-    // Run getEmails once when the component mounts if no emails loaded
+    const transformApiDataToFolders = (apiData: any): Folder[] => {
+        return apiData.folders.map((folderName: string) => ({
+            id: folderName,
+            label: folderName.split('/').pop() || folderName,
+            emails: apiData.emails
+                .filter((email: any) => email.folder === folderName)
+                .map((email: any) => ({
+                    id: email.message_id,
+                    from: email.from,
+                    subject: email.subject,
+                    date: email.date,
+                    folder: email.folder,
+                    message_id: email.message_id,
+                    body: email.body,
+                    attachments: email.attachments || [],
+                    has_attachments: email.has_attachments || false,
+                }))
+        }));
+    };
+
+    const getEmails = async () => {
+        try {
+            const res = await fetchEmailsFromBackend();
+            if (res) {
+                handleFetchResponse(res);
+            }
+        } catch (error) {
+            console.error("Error loading emails:", error);
+        }
+    };
+
+    // Run getEmails when the component mounts or when the stored email data is emptied.
     useEffect(() => {
         if (settings.emails.length === 0) {
-            getEmails();
+            void getEmails();
         }
-    }, []);
+    }, [settings.emails.length]);
 
     const handleSelectFolder = (folderId: string) => {
         setSelectedFolderId(folderId);
@@ -411,14 +423,9 @@ function EmailPage() {
             const password = settings.user.password;
             
             const res = await getFolders({ email, password });
-            console.log("Get folders response:", res);
             if ((res as any).folders) {
                 setAvailableFolders((res as any).folders);
-                console.log("Available folders set:", (res as any).folders);
-            } else {
-                console.log("No folders found in response");
             }
-            
             setShowAddFolderModal(true);
         } catch (error) {
             console.error("Error fetching folders:", error);

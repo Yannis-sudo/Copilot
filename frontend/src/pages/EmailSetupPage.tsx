@@ -48,15 +48,6 @@ function EmailSetupPage() {
         setIsLoading(true);
 
         try {
-            console.log("Sending email server config:", {
-                email: form.email,
-                password: form.emailPassword,
-                server_incoming: form.imapServer,
-                server_outgoing: form.smtpServer,
-                server_incoming_port: parseInt(form.imapPort),
-                server_outgoing_port: parseInt(form.smtpPort),
-            });
-            
             await addEmailServer({
                 email: form.email,
                 password: form.emailPassword,
@@ -65,8 +56,6 @@ function EmailSetupPage() {
                 server_incoming_port: parseInt(form.imapPort),
                 server_outgoing_port: parseInt(form.smtpPort),
             });
-            
-            console.log("API call successful, navigating to /email");
             navigate("/email");
         } catch (err) {
             console.error("API call failed:", err);
