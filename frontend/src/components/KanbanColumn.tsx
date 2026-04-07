@@ -2,6 +2,7 @@ import UIIconButton from "./UIIconButton";
 import NoteCard from "./NoteCard";
 import type { NoteInfo } from "../types/api";
 import useTheme from "../hooks/useTheme";
+import { sortNotesByPriority } from "../utils/noteSorting";
 
 type ColumnId = "backlog" | "todo" | "in-progress" | "done";
 
@@ -33,6 +34,9 @@ function KanbanColumn({
     onNoteDelete 
 }: KanbanColumnProps) {
     const theme = useTheme();
+    
+    // Sort notes by priority before rendering
+    const sortedColumnNotes = sortNotesByPriority(columnNotes);
     return (
         <div
             key={column.id}
@@ -54,7 +58,7 @@ function KanbanColumn({
                             color: theme.colors.primaryLight
                         }}
                     >
-                        {columnNotes.length}
+                        {sortedColumnNotes.length}
                     </span>
                 </div>
                 <UIIconButton
@@ -77,13 +81,13 @@ function KanbanColumn({
                     borderStyle: isOver ? "dashed" : "solid"
                 }}
             >
-                {columnNotes.length === 0 && (
+                {sortedColumnNotes.length === 0 && (
                     <p className="text-xs text-gray-600 text-center pt-6">
                         Drop notes here
                     </p>
                 )}
 
-                {columnNotes.map((note) => (
+                {sortedColumnNotes.map((note) => (
                     <NoteCard
                         key={note.note_id}
                         note={note}

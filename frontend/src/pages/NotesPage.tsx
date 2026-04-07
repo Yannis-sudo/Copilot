@@ -11,6 +11,7 @@ import PermissionErrorModal from "../components/PermissionErrorModal";
 import { useSettings } from "../context/SettingsContext";
 import { addNote, addList, deleteList, updateNoteColumn } from "../api";
 import type { NoteInfo, ListInfo } from "../types/api";
+import { sortNotesByPriority } from "../utils/noteSorting";
 
 // Priority levels with matching colors
 type Priority = "low" | "medium" | "high";
@@ -95,8 +96,8 @@ function NotesPage() {
         }
     }, [settings.lists, activeListId]);
 
-    // Notes filtered to the currently active list
-    const visibleNotes = settings.notes.filter((n) => n.list_id === activeListId);
+    // Notes filtered to the currently active list and sorted by priority
+    const visibleNotes = sortNotesByPriority(settings.notes.filter((n) => n.list_id === activeListId));
 
     const handleDragStart = (id: string) => {
         setDraggingId(id);
