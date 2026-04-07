@@ -7,6 +7,7 @@ import AddListModal from "../components/AddListModal";
 import NotesSidebar from "../components/NotesSidebar";
 import ConfirmDialog from "../components/ConfirmDialog";
 import ListDetailModal from "../components/ListDetailModal";
+import PermissionErrorModal from "../components/PermissionErrorModal";
 import { useSettings } from "../context/SettingsContext";
 import { addNote, addList, deleteList, updateNoteColumn } from "../api";
 import type { NoteInfo, ListInfo } from "../types/api";
@@ -50,9 +51,31 @@ function NotesPage() {
     const [newListName, setNewListName] = useState("");
     const [newListDescription, setNewListDescription] = useState("");
 
-    // Delete confirmation dialog state
+    // Delete confirmation state
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [listToDelete, setListToDelete] = useState<{ id: string; name: string } | null>(null);
+
+    // Permission error modal state
+    const [showPermissionError, setShowPermissionError] = useState(false);
+    const [permissionError, setPermissionError] = useState<{ title: string; message: string; suggestion?: string } | null>(null);
+
+    // Get current list and user permissions
+    const getCurrentListPermissions = () => {
+        const currentList = settings.lists.find(list => list.list_id === activeListId);
+        if (!currentList) return null;
+        
+        // Find user's permissions for this list
+        // This would need to be fetched from API in a real implementation
+        return {
+            list: currentList,
+            userPermissions: {
+                can_view: true, // Assume user can view if they can see the list
+                can_create: currentList.admins?.includes(settings.user.email) || false,
+                can_edit: currentList.admins?.includes(settings.user.email) || false,
+                can_delete: currentList.admins?.includes(settings.user.email) || false
+            }
+        };
+    };
 
     // List detail modal state
     const [showListDetail, setShowListDetail] = useState(false);
@@ -205,6 +228,18 @@ function NotesPage() {
     };
 
     const handleOpenAddNote = (columnId: ColumnId) => {
+        const permissions = getCurrentListPermissions();
+        
+        if (!permissions?.userPermissions?.can_create) {
+            setPermissionError({
+                title: "Permission Required",
+                message: "You don't have permission to create notes in this list.",
+                suggestion: "Contact a list admin to request create permissions."
+            });
+            setShowPermissionError(true);
+            return;
+        }
+        
         setAddNoteColumn(columnId);
         setNewNote({ title: "", body: "", priority: "medium" as Priority });
         setShowAddNote(true);
@@ -253,6 +288,18 @@ function NotesPage() {
     };
 
     const handleDeleteNote = (id: string) => {
+        const permissions = getCurrentListPermissions();
+        
+        if (!permissions?.userPermissions?.can_delete) {
+            setPermissionError({
+                title: "Permission Required",
+                message: "You don't have permission to delete notes in this list.",
+                suggestion: "Contact a list admin to request delete permissions."
+            });
+            setShowPermissionError(true);
+            return;
+        }
+        
         // This would require a backend API call to delete the note
         // For now, just filter it out from the display
         if (detailNote?.note_id === id) setDetailNote(null);
@@ -274,6 +321,7 @@ function NotesPage() {
                     onSelectList={setActiveListId}
                     onListDetail={handleListDetail}
                     onDeleteList={handleDeleteList}
+                    onManagePermissions={() => {}} // TODO: Implement permissions management
                     listsLoading={settings.listsLoading}
                     listsError={settings.listsError}
                     onRefreshLists={() => {
@@ -312,7 +360,7 @@ function NotesPage() {
 
             {/* Note detail modal */}
             {detailNote && (
-                <Modal onClose={() => setDetailNote(null)}>
+                <Modal isOpen={!!detailNote} onClose={() => setDetailNote(null)}>
                     <div className="space-y-4">
                         <div className="flex items-start justify-between gap-4">
                             <h2 className="text-xl font-bold text-gray-100 leading-snug">{detailNote.title}</h2>
@@ -379,6 +427,15 @@ function NotesPage() {
                 onConfirm={confirmDeleteList}
                 onCancel={cancelDeleteList}
                 isDangerous={true}
+            />
+
+            {/* Permission error modal */}
+            <PermissionErrorModal
+                isOpen={showPermissionError}
+                onClose={() => setShowPermissionError(false)}
+                title={permissionError?.title || "Permission Error"}
+                message={permissionError?.message || "An error occurred"}
+                suggestion={permissionError?.suggestion}
             />
 
             {/* List detail modal */}

@@ -32,7 +32,7 @@ function AddListModal({
     const isFormValid = isNameValid && isDescriptionValid;
 
     return (
-        <Modal onClose={onClose}>
+        <Modal isOpen={show} onClose={onClose}>
             <div className="space-y-4">
                 <h2 className="text-xl font-bold text-gray-100">
                     Create New List

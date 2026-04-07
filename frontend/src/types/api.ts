@@ -146,3 +146,44 @@ export interface NoteInfo {
   created_at?: string;
   updated_at?: string;
 }
+
+// Permissions types
+export interface PermissionData {
+  can_view: boolean;
+  can_create: boolean;
+  can_edit: boolean;
+  can_delete: boolean;
+}
+
+export interface UserPermission {
+  email: string;
+  username: string;
+  permissions: PermissionData;
+}
+
+export interface UpdatePermissionsPayload {
+  email: string;
+  password: string;
+  list_id: string;
+  target_user_email: string;
+  permissions: Partial<PermissionData>;
+}
+
+export interface UpdatePermissionsResponse {
+  message: string;
+  target_user_email: string;
+  list_id: string;
+  updated_permissions: PermissionData;
+}
+
+export interface GetPermissionsPayload {
+  email: string;
+  password: string;
+  list_id: string;
+}
+
+export interface GetPermissionsResponse {
+  message: string;
+  list_id: string;
+  users: UserPermission[];
+}

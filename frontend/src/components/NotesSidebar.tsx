@@ -1,7 +1,10 @@
+import { useState } from "react";
 import UIIconButton from "./UIIconButton";
 import ListOptionsDropdown from "./ListOptionsDropdown";
+import PermissionsModal from "./PermissionsModal";
 import type { ListInfo, NoteInfo } from "../types/api";
 import useTheme from "../hooks/useTheme";
+import { useSettings } from "../context/SettingsContext";
 
 type Priority = "low" | "medium" | "high";
 
@@ -20,13 +23,27 @@ interface NotesSidebarProps {
     onSelectList: (listId: string) => void;
     onListDetail?: (list: ListInfo) => void;
     onDeleteList?: (listId: string, listName: string) => void;
+    onManagePermissions?: (list: ListInfo) => void;
     listsLoading: boolean;
     listsError: string | null;
     onRefreshLists: () => void;
 }
 
-function NotesSidebar({ lists, notes, activeListId, visibleNotes, onAddList, onSelectList, onListDetail, onDeleteList, listsLoading, listsError, onRefreshLists }: NotesSidebarProps) {
+function NotesSidebar({ lists, notes, activeListId, visibleNotes, onAddList, onSelectList, onListDetail, onDeleteList, onManagePermissions, listsLoading, listsError, onRefreshLists }: NotesSidebarProps) {
     const theme = useTheme();
+    const { settings } = useSettings();
+    const [permissionsModalOpen, setPermissionsModalOpen] = useState(false);
+    const [selectedListForPermissions, setSelectedListForPermissions] = useState<ListInfo | null>(null);
+
+    const handleManagePermissions = (list: ListInfo) => {
+        setSelectedListForPermissions(list);
+        setPermissionsModalOpen(true);
+    };
+
+    // Check if user is admin for each list
+    const isAdminForList = (list: ListInfo) => {
+        return list.admins?.includes(settings.user.email) || false;
+    };
     return (
         <aside
             className="relative z-10 w-60 bg-[#1a1a1a] flex flex-col shrink-0 border-r"
@@ -174,6 +191,8 @@ function NotesSidebar({ lists, notes, activeListId, visibleNotes, onAddList, onS
                                             list={list}
                                             onDelete={onDeleteList || (() => {})}
                                             onDetails={onListDetail || (() => {})}
+                                            onManagePermissions={handleManagePermissions}
+                                            isAdmin={isAdminForList(list)}
                                         />
                                     </div>
                                 </button>
@@ -200,6 +219,17 @@ function NotesSidebar({ lists, notes, activeListId, visibleNotes, onAddList, onS
                     );
                 })}
             </div>
+
+            {/* Permissions Modal */}
+            {selectedListForPermissions && (
+                <PermissionsModal
+                    isOpen={permissionsModalOpen}
+                    onClose={() => setPermissionsModalOpen(false)}
+                    list={selectedListForPermissions}
+                    userEmail={settings.user.email}
+                    userPassword={settings.user.password}
+                />
+            )}
         </aside>
     );
 }

@@ -6,7 +6,7 @@ import {
   API_CONFIG,
   ERROR_MESSAGES,
 } from "./constants";
-import type { ApiResponse, CreateAccountPayload, LoginPayload, LoginResponse, AddEmailServerPayload, AddFolderPayload, SendEmailPayload, AddNotePayload, AddListPayload, GetListsPayload, GetNotesPayload, DeleteListPayload, UpdateNoteColumnPayload } from "./types";
+import type { ApiResponse, CreateAccountPayload, LoginPayload, LoginResponse, AddEmailServerPayload, AddFolderPayload, SendEmailPayload, AddNotePayload, AddListPayload, GetListsPayload, GetNotesPayload, DeleteListPayload, UpdateNoteColumnPayload, UpdatePermissionsPayload, UpdatePermissionsResponse, GetPermissionsPayload, GetPermissionsResponse } from "./types";
 
 /**
  * Make an API request with error handling
@@ -201,6 +201,26 @@ export async function deleteList(payload: DeleteListPayload): Promise<ApiRespons
 export async function updateNoteColumn(payload: UpdateNoteColumnPayload): Promise<ApiResponse> {
   return makeRequest<ApiResponse>(API_CONFIG.ENDPOINTS.UPDATE_NOTE_COLUMN, {
     method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+/**
+ * Update user permissions for a list
+ */
+export async function updatePermissions(payload: UpdatePermissionsPayload): Promise<UpdatePermissionsResponse> {
+  return makeRequest<UpdatePermissionsResponse>(API_CONFIG.ENDPOINTS.UPDATE_PERMISSIONS, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+/**
+ * Get all users with permissions for a list
+ */
+export async function getPermissions(payload: GetPermissionsPayload): Promise<GetPermissionsResponse> {
+  return makeRequest<GetPermissionsResponse>(API_CONFIG.ENDPOINTS.GET_PERMISSIONS, {
+    method: "POST",
     body: JSON.stringify(payload),
   });
 }

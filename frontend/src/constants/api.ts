@@ -21,6 +21,8 @@ export const API_CONFIG = {
     GET_NOTES: "/getnotes",
     DELETE_LIST: "/deletelist",
     UPDATE_NOTE_COLUMN: "/updatenotecolumn",
+    UPDATE_PERMISSIONS: "/updatepermissions",
+    GET_PERMISSIONS: "/getpermissions",
   },
 } as const;
 

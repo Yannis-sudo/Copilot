@@ -19,7 +19,7 @@ function ListDetailModal({ show, onClose, list }: ListDetailModalProps) {
     };
 
     return (
-        <Modal onClose={onClose}>
+        <Modal isOpen={show} onClose={onClose}>
             <div className="space-y-4">
                 <div className="flex items-start justify-between gap-4">
                     <h2 className="text-xl font-bold text-gray-100 leading-snug">{list.list_name}</h2>

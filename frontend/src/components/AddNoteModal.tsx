@@ -35,7 +35,7 @@ function AddNoteModal({ show, onClose, addNoteColumn, newNote, onNoteChange, onC
     if (!show) return null;
 
     return (
-        <Modal onClose={onClose}>
+        <Modal isOpen={show} onClose={onClose}>
             <div className="space-y-4">
                 <h2 className="text-xl font-bold" style={{ color: theme.colors.textPrimary }}>
                     New Note —{" "}
